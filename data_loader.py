@@ -3,14 +3,17 @@
 from pathlib import Path
 import numpy as np
 
-def _check_valid_cols(cols : list, available_cols : list):
-    if not all(col in available_cols for col in cols):
-        missing_cols = [col for col in cols if col not in header_titles]
-        missing_cols = " ".join(missing_cols) 
-        raise KeyError(
-                    f"The following columns don't exist in the dump file: {missing_cols}")
 
-def _chunk_generator(source : Path, groupby : str):
+def _check_valid_cols(cols: list, available_cols: list):
+    if not all(col in available_cols for col in cols):
+        missing_cols = [col for col in cols if col not in available_cols]
+        missing_cols = " ".join(missing_cols)
+        raise KeyError(
+            f"The following columns don't exist in the dump file: {missing_cols}"
+        )
+
+
+def _chunk_generator(source: Path, groupby: str):
     data = []
     for row in source:
         if row.startswith(groupby):
@@ -21,7 +24,12 @@ def _chunk_generator(source : Path, groupby : str):
     if data:
         yield data
 
-def load_dump_timestep(filepath: Path, cols: list | None = None, skip : int = 0):
+
+def _sort_by_column(data: np.ndarray, sort_id: int = 0):
+    return data[data[:, sort_id].argsort()]
+
+
+def load_dump_timestep(filepath: Path, cols: list | None = None, skip: int = 0):
     """
     Generator that reads a LAMMPS dump file one timestep at a time.
 
@@ -31,7 +39,6 @@ def load_dump_timestep(filepath: Path, cols: list | None = None, skip : int = 0)
     """
     TIMESTEP_LINE_START = "ITEM: TIMESTEP"
 
-
     with open(filepath, "r") as dump_file:
         # Use a generator function to iterate per timestep chunk
         for i, chunk in enumerate(_chunk_generator(dump_file, TIMESTEP_LINE_START)):
@@ -39,29 +46,40 @@ def load_dump_timestep(filepath: Path, cols: list | None = None, skip : int = 0)
                 continue
             # Drop "ITEM:" and "ATOMS" to leave only the column headings
             atom_headings = chunk[8].split()[2:]
-
+            id_col = atom_headings.index("id")
             if cols is not None:
                 # Check that all requested columns are present in the file
                 _check_valid_cols(cols, atom_headings)
-                used_titles = [title for title in atom_headings if title in cols]
-                used_title_ids = [atom_headings.index(title) for title in used_titles]
+                used_title_ids = sorted(
+                    set(atom_headings.index(title) for title in cols) | {id_col}
+                )
+                used_titles = [atom_headings[i] for i in used_title_ids]
             else:
                 # Use all the columns
                 used_titles = atom_headings
                 used_title_ids = list(range(len(atom_headings)))
 
+            # Box size in x, y, z from the "ITEM: BOX BOUNDS" lines (6th-8th lines of the chunk)
+            box_size = np.array(
+                [
+                    float(chunk[i].split()[1]) - float(chunk[i].split()[0])
+                    for i in (5, 6, 7)
+                ]
+            )
+
             chunk_params = {
                 "timestep": int(chunk[1]),
                 "n_atoms": int(chunk[3]),
+                "box_size": box_size,
                 "atom_headings": atom_headings,
                 "used_titles": used_titles,
             }
 
             # Parse all atom lines for this chunk in one go
+
             data = np.loadtxt(chunk[9:], usecols=used_title_ids, ndmin=2)
-
-            yield chunk_params, data           
-
+            data = _sort_by_column(data, used_title_ids.index(id_col))
+            yield chunk_params, data
 
 
 if __name__ == "__main__":
