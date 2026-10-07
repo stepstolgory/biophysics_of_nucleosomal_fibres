@@ -1,0 +1,111 @@
+### Set the main parameters of the accurate simulation
+variable in_path index "init_configs/init_config_1.dat" # default initial config file path
+variable out_path index "sim_outputs/dump_main.nucleosomes"
+
+variable E equal 9.0 # These two variables dictate the energy well depth
+variable I equal 0.3
+variable wrapEuniform equal 10.0
+
+# Seeds for random engine (would change dynamically for runs?) Currently match given file
+variable seed equal 54654651
+variable seed2 equal 84575451
+
+units lj
+
+
+atom_style hybrid angle ellipsoid
+boundary p p p
+
+neighbor 1.9 bin
+neigh_modify every 1 delay 1 check yes
+neigh_modify exclude none
+neigh_modify exclude molecule/intra nuc
+neight_modify exclude group bigcore patches
+
+
+angle_style hybrid cosine polytorsion polytorsionend
+angle_coeff 1 cosine 29.41
+angle_coeff 2 polytorsion 70.0 44.12
+angle_coeff 3 polytorsion 70.0 0.0
+
+bond_style fene
+special_bonds fene
+bond_coeff 1 64.88 1.28 1.0 0.68
+read_data ${in_path}
+
+group all type 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+group dna type 1 2
+group smallcore type 3
+group bigcore type 4
+group patches type 5 6 7 8 9 10 11 12 13 14 15 16 18 18 19 20 21 22
+group nucCentre type 23
+
+group notnuc molecule 0
+group nuc molecule > 0
+
+variable nucE_FF equal ${E}  ## depth of face-to-face well
+variable nucE_FS equal ${I}   ## depth of face-to-side well
+variable nucE_SS equal 0.0      ## depth of side-to-side-A well
+variable nucE_S0 equal 0.0      ## depth of side-to-side-B well
+#
+variable nucL_D0 equal 0.784
+variable nucR_FF equal 2.752    ## range of face-to-face
+variable nucR_FS equal 3.508    ## range of face-to-side
+variable nucR_SS equal 4.988    ## range of side-to-side-A
+variable nucR_S0 equal 4.944    ## range of side-to-side-B
+
+# convert these to the actual parameters needed for the pair styles
+variable nucE_a equal ${nucE_S0}
+variable nucE_b equal ${nucE_SS}-${nucE_S0}
+variable nucE_c equal 2.0*${nucE_FS}-2.0*${nucE_S0}
+variable nucE_d equal ${nucE_FF}-2.0*${nucE_FS}-${nucE_SS}+2.0*${nucE_S0}
+variable nucE_e equal 0.0 ## Will need to change later--add 4th order correction
+variable nucA_a equal 0.64930686589/${nucL_D0}
+variable nucR_a equal ${nucR_S0}
+variable nucR_b equal ${nucR_SS}-${nucR_S0}
+variable nucR_c equal 2.0*${nucR_FS}-2.0*${nucR_S0}
+variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
+
+# Dump configs
+
+compute quat all property/atom quatw quati quatj quatk
+dump dum1 all custom 10000 dump_main.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4]
+
+# Pair interactions
+pair_style      hybrid lj/cut 1.12246152962189 morse 1.12246152962189 exnusome 6.0
+pair_modify     shift yes
+pair_coeff      1*3 1*3 lj/cut 1.0 1.0 1.12246152962189
+pair_coeff      4 4 lj/cut 1.0 1.365232 1.53242039900875 # these have diameter 1.365232
+pair_coeff      1*3 4 lj/cut 1.0 1.182616 1.32744096431532 # diameter 0.5*(1+1.365232)
+pair_coeff      1*3 5*22 lj/cut 1.0 1.0 1.12246152962189
+pair_coeff      1 5*22 morse 0.0 1.75 0.0 0.9 # Morse use for the sticky patches
+# patches need to exclude each other, to stop one DNA bead from interacting with
+# multiple patches
+pair_coeff      5*22 5*22 lj/cut 1.0 1.0 1.12246152962189
+# will be turning these off, but still need to specify
+pair_coeff      4 5*22 lj/cut 0.0 1.0 1.12246152962189
+
+pair_coeff 1*22 23 lj/cut 1.0 1.0 1.12246152962189 # type 23 looks like a size 1 to everything
+pair_coeff 1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
+pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
+
+
+# add internucleosome interaction -- but attractrion set to zero to start with
+#pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
+
+fix 1 notnuc nve/asphere
+fix 2 notnuc langevin 1.0 1.0 0.5 ${seed} angmom 3.333
+fix 3 nuc rigid/small molecule langevin/rotation 1.0 1.0 9/28 2.78 ${seed2}
+
+timestep 0.005
+
+compute nucenergy all pair exnusome
+compute wrapenergy all pair morse
+thermo 50000
+thermo_style custom step temp epair c_nucenergy c_wrapenergy
+thermo_modify temp t1 norm no
+
+run 10000000
+
+write_data final.data nocoeff
