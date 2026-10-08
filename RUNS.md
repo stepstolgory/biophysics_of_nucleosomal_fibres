@@ -8,11 +8,11 @@ This file describes various tests that were run in many areas of the program.
 | ID | Date | Test | Status |
 |---|---|---|---|
 | T1 | 2026-10-08 16:03 | Split set-up script | Passed |
-| T2 | 2026-10-08 | Split main script | In progress |
+| T2 | 2026-10-08 16:25 | Split main script | In progress |
 
 ---
 
-#### T1: Split set-up script (2026-10-08 14:30)
+#### T1: Split set-up script (2026-10-08 16:03)
 
 **Aim:** Check that the new set-up (equilibration) script runs on its own and writes a data file.
 
@@ -42,7 +42,7 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var
 
 ---
 
-#### T2: MPI timing (2026-10-08 16:00)
+#### T2: Split main script (2026-10-08 16:25)
 
 **Aim:** Check that the new main simulation script runs on its own and writes correct data files.
 
@@ -50,7 +50,7 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var
 - Script: `scripts/lammps/main.lammps_twistable_nucInteractions`
 - Parameters: E = 9.0, I = 0.3, 10 nucleosomes
 - Seeds: 54654651, 84575451
-- Git commit: `79397dd` 
+- Git commit: `cca5058` 
 
 Command:
 ```bash
