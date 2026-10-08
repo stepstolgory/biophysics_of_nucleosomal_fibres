@@ -220,7 +220,7 @@ __marimo__/
 # LAMMPS dump files
 *.lammps
 *.nucleosomes
-*.out
+*.data
 *.init
 
 # LAMMPS executeable
