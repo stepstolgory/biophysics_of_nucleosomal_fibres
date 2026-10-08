@@ -26,10 +26,6 @@ vmd -lammpstrj <path_to_dump_file>/dump_main.nucleosomes -e <path_to>/colours.tc
 ```
 
 # Run LAMMPS sim
-``` console
-nohup mpirun -np 4 LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var out "test4" -log tests/outputs/test_log4.lammps -screen none > /dev/null 2>&1 &```
-``` console
-nohup LAMMPS/lmp_mpi -in scripts/lammps/main_simulation_script.lammps_twistable_nucInteractions -var dump_out "test_main1" -var in "test2" -var data_out "test_main1" -log tests/outputs/test_log_main1.lammps -screen none > /dev/null 2>&1 &
-```
-
+> [!NOTE]
+> For running specific LAMMPS simulations refer to the `RUNS.md` file.
 <!-- TODO: Add a table to arguments taken by the LAMMPS scripts -->
