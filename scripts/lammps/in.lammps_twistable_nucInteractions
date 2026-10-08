@@ -3,8 +3,9 @@
 ###############################################
 
 #Paths
-variable out index "init_config_1"
-variable dump_out index "dump_initial"
+variable id index 1
+variable out index "init_config_${id}"
+variable dump_out index "dump_initial${id}"
 ### Set the main parameters
 # Find out what the variabls actually represent
 variable E equal 9.0 # these lines define variables used for the rest of the simulation. 
@@ -36,7 +37,7 @@ neigh_modify every 1 delay 1 check yes # affects the building of the pairwise li
 ### 
 # READ "start" data file 
 ###
-read_data initial_condition_builder/data.lammps # this file defines the starting positions
+read_data initial_positions/data_${id}.lammps # this file defines the starting positions
 
 
 ###
