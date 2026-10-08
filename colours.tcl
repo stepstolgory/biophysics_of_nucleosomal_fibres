@@ -29,3 +29,8 @@ mol modselect 4 0 type 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
 mol modcolor 4 0 ColorID 4
 mol modstyle 4 0 VDW 0.5 42.0
 mol modmaterial 4 0 Transparent
+
+light 0 off
+light 1 on
+light 2 on
+light 3 on
