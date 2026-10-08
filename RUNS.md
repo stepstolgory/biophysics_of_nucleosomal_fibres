@@ -24,7 +24,7 @@ This file describes various tests that were run in many areas of the program.
 
 **Command:**
 ```bash
-nohup LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var out "initial_condition_test1" -log tests/outputs/initial_condition_test1.lammps -screen none > /dev/null 2>&1 &
+nohup LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var out initial_condition_test1 -log tests/outputs/initial_condition_test1.lammps -screen none > /dev/null 2>&1 &
 ```
 
 **Outputs:**
@@ -54,6 +54,6 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/in.lammps_twistable_nucInteractions -var
 
 Command:
 ```bash
-nohup LAMMPS/lmp_mpi -in scripts/main.lammps_twistable_nucInteractions -var in initial_condition_test1 -var dump_out main_test_1 -var data_out main_test_1 -log tests.outputs/main_test_1.lammps -screen none > /dev/null 2>&1 &
+nohup LAMMPS/lmp_mpi -in scripts/main.lammps_twistable_nucInteractions -var in initial_condition_test1 -var dump_out main_test1 -var data_out main_test1 -log tests.outputs/main_test1.lammps -screen none > /dev/null 2>&1 &
 ```
 
