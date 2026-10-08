@@ -4,6 +4,7 @@
 
 #Paths
 variable out index "init_config_1"
+variable dump_out index "dump_initial"
 ### Set the main parameters
 # Find out what the variabls actually represent
 variable E equal 9.0 # these lines define variables used for the rest of the simulation. 
@@ -89,7 +90,7 @@ variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 ###
 compute quat all property/atom quatw quati quatj quatk # compute a quantuty called quat on all atoms per atom. this quantity is a quaternion (rotation) for aspherical particles
 # for the initial bit, dump quite often
-dump dum1 all custom 5000 dump_initial.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
+dump dum1 all custom 5000 sim_outputs/initial/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
 # compute the quaternion which describes the orientation of each bead
 # output along with coordinates
 
