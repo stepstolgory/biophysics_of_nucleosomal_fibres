@@ -221,3 +221,8 @@ __marimo__/
 *.lammps
 *.nucleosomes
 *.out
+*.init
+
+# LAMMPS executeable
+LAMMPS/
+
