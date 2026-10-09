@@ -15,5 +15,5 @@ for ((a = 1; a <= N; a++)); do
   SEED=$(python scripts/python/random_seed.py)
   echo "$a $SEED" >>ic_seeds.txt
   id=$a
-  ./initial_condition_builder/generate_ic -f initial_positions/data_${id}.lammps -s "${SEED}" &>/dev/null
+  ./initial_condition_builder/generate_ic -f initial_positions/data_${id}.lammps -s "${SEED} -e 1 -N 10 -L1 5 -L 8 -LF 5" &>/dev/null
 done
