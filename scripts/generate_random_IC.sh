@@ -6,7 +6,7 @@ N=$1
 
 if [[ -z "$N" ]]; then
 
-  echo "Usage: $0 N [seed_file]" >&2
+  echo "Usage: $0 N " >&2
 
   exit 1
 fi
