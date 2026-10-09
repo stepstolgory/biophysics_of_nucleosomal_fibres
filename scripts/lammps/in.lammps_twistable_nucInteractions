@@ -4,8 +4,8 @@
 
 #Paths
 variable id index 1
-variable out index "init_config_${id}"
-variable dump_out index "dump_initial${id}"
+variable out index init_config_${id}
+variable dump_out index dump_initial_${id}
 ### Set the main parameters
 # Find out what the variabls actually represent
 variable E equal 9.0 # these lines define variables used for the rest of the simulation. 
