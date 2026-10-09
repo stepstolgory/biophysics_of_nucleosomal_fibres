@@ -10,7 +10,7 @@ This file describes various tests that were run in many areas of the program.
 | T1 | 2026-10-08 16:03 | Split set-up script | Passed |
 | T2 | 2026-10-08 16:25 | Split main script | Passed |
 | T3 | 2026-10-08 18:36 | MPI main version | Completed|
-| T4 | 2026-10-08 19:24 | 32 process MPI main | In Progress |
+| T4 | 2026-10-08 19:24 | 32 process MPI main | Completed|
 
 ---
 
