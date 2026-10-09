@@ -218,7 +218,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 # LAMMPS dump files
-*.lammps
 *.nucleosomes
 *.data
 *.init
