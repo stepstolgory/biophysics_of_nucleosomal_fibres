@@ -13,7 +13,7 @@ fi
 
 for ((a = 1; a <= N; a++)); do
   SEED=$(python scripts/python/random_seed.py)
-  echo "$a $SEED" >>seeds.txt
+  echo "$a $SEED" >>ic_seeds.txt
   id=$a
   ./initial_condition_builder/generate_ic -f initial_positions/data_${id}.lammps -s "${SEED}" &>/dev/null
 done
