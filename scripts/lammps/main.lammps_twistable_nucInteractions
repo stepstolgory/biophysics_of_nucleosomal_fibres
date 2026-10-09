@@ -1,16 +1,18 @@
 ### Set the main parameters of the accurate simulation
-variable in index "init_config_1" # default initial config file path
-variable dump_out index "dump_main"
-variable data_out index "final"
+variable id index 1
+variable in index init_config_${id} # default initial config file path
+variable dump_out index dump_main_${id}
+variable data_out index final_${id}
 
 variable E equal 9.0 # These two variables dictate the energy well depth
 variable I equal 0.3
 variable wrapEuniform equal 10.0
 
 # Seeds for random engine (would change dynamically for runs?) Currently match given file
-variable seed equal 54654651
-variable seed2 equal 84575451
+# variable seed equal 54654651
+# variable seed2 equal 84575451
 
+include seeds/seed_${id}.lammps
 units lj
 
 
