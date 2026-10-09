@@ -13,9 +13,10 @@ variable I equal 0.3
 variable wrapEuniform equal 10.0
 
 # Seeds for the randomness engines
-variable seed equal 54654651     # a seed for the thermostat
-variable seed2 equal 84575451     # a seed for the other thermostat
+# variable seed equal 54654651     # a seed for the thermostat
+# variable seed2 equal 84575451     # a seed for the other thermostat
 
+include seeds/seed_${id}.lammps
 
 ###
 # Box and units  (use LJ units and periodic boundaries)
