@@ -1,18 +1,40 @@
-### Set the main parameters of the accurate simulation
-variable id index 1
-variable in index init_config_${id} # default initial config file path
-variable dump_out index dump_main_${id}
-variable data_out index final_${id}
+###############################################
+# Production run. Runs one job, or several, from a sweep folder made by
+# scripts/make_sweep.sh. Run from the repo root.
+#
 
-variable E equal 9.0 # These two variables dictate the energy well depth
-variable I equal 0.3
-variable wrapEuniform equal 10.0
+#   One job:         lmp -in <this script> -var sweep sweeps/NAME -var job 7 -log none
+#   Every job:       lmp -in <this script> -var sweep sweeps/NAME -log none
+#   Many at once:    scripts/run_sweep.sh sweeps/NAME 10
+#   Partition mode:  mpirun -np 10 lmp -partition 10x1 -plog none -pscreen none -in <this script> -var sweep sweeps/NAME
+#   Short test run:  add -var nsteps 20000
+#
+# Don't start two partition-mode (or "every job") batches from the same folder at once:
+# they share the job counter file tmp.lammps.variable and skip each other's jobs.
+###############################################
 
-# Seeds for random engine (would change dynamically for runs?) Currently match given file
-# variable seed equal 54654651
-# variable seed2 equal 84575451
 
-include seeds/seed_${id}.lammps
+include ${sweep}/sweep.lammps     # sets njobs
+variable nsteps index 10000000    # length of the production run
+variable job uloop ${njobs}       # skipped if job was given with -var
+
+label next_job
+
+# Sets E, I, wrapEuniform, rep, start and run_dir for this job.
+# RULE: below this label, define only string or equal variables, never index.
+include ${sweep}/jobs/job_${job}.lammps
+
+
+# Skip a job that has already finished. This must come before the log command,
+# which would empty the old log.
+variable done equal is_file(${run_dir}/final.data)
+if "${done} == 1" then "print 'Job ${job} already finished, skipping'" "jump SELF skip_job"
+
+
+include seeds/seed_${rep}.lammps  # same seeds for repeat r, whatever the parameters
+log ${run_dir}/log.lammps
+print "Job ${job}: E = ${E}, I = ${I}, wrapEuniform = ${wrapEuniform}, rep ${rep}, seeds ${seed} ${seed2}, start ${start}"
+
 units lj
 
 
@@ -27,7 +49,7 @@ angle_style hybrid cosine polytorsion polytorsionend
 bond_style fene
 special_bonds fene
 
-read_data init_configs/${in}.init
+read_data ${start}
 
 angle_coeff 1 cosine 29.41
 angle_coeff 2 polytorsion 70.0 44.12
@@ -75,7 +97,7 @@ variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 # Dump configs
 
 compute quat all property/atom quatw quati quatj quatk
-dump dum1 all custom 10000 sim_outputs/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4]
+dump dum1 all custom 10000 ${run_dir}/duump.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4]
 
 # Pair interactions
 pair_style      hybrid lj/cut 1.12246152962189 morse 1.12246152962189 exnusome 6.0
@@ -112,8 +134,14 @@ thermo 50000
 thermo_style custom step temp epair c_nucenergy c_wrapenergy
 thermo_modify temp t1 norm no
 
-run 10000000
+run ${nsteps}
 
-write_data data_files/${data_out}.data nocoeff
+write_data ${run_dir}/final.data nocoeff
 
+# Move on to the next job nobody has started. clear wipes the simulation but keeps
+# variables. When no jobs are left, next makes LAMMPS skip the jump and the script ends.
+label skip_job
+clear
+next job
+jump SELF next_job
 
