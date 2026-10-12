@@ -10,10 +10,14 @@ if [[ -z "$N" ]]; then
 fi
 
 for ((a = 1; a <= N; a++)); do
-  SEED1=$(python scripts/python/random_seed.py)
-  SEED2=$(python scripts/python/random_seed.py)
+  if [[ -f seeds/seed_$a.lammps ]]; then
+    echo "seeds/seed_$a.lammps already exists. Skipping."
+  else
+    SEED1=$(python scripts/python/random_seed.py)
+    SEED2=$(python scripts/python/random_seed.py)
 
-  echo "variable seed equal ${SEED1}" >>seeds/seed_$a.lammps
-  echo "variable seed2 equal ${SEED2}" >>seeds/seed_$a.lammps
+    echo "variable seed equal ${SEED1}" >seeds/seed_$a.lammps
+    echo "variable seed2 equal ${SEED2}" >>seeds/seed_$a.lammps
+  fi
 
 done
