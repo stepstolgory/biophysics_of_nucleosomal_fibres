@@ -34,44 +34,27 @@ def calculate_radius_of_gyration(
     return np.sqrt(rg_sq)
 
 
-def plot_rg_over_time(
-    time_data: np.ndarray, rg_data: np.ndarray, n_bins: int = 50
-) -> None:
+def calculate_end_to_end_distance(
+    n_atoms: int, data: np.ndarray, box_size: np.ndarray, titles: list
+) -> float:
+    """Calculate the end to end distance by calculating the cartesian distance between atom with id 0 and id n_atom"""
 
-    time_bins = np.array_split(time_data, n_bins)
-    rg_data_bins = np.array_split(rg_data, n_bins)
+    # Since the list comes out as sorted by atom ID, I can just take the first and last atom
+    # NOTE:: Could be beneficial to add an "offset" parameter for longer tails. Then would find distance between data[offset] and data[-offset]
 
-    bin_centres = np.array([t.mean() for t in time_bins])
-    mean = np.array([rg.mean() for rg in rg_data_bins])
-    std = np.array([rg.std() for rg in rg_data_bins])
-
-    fig, ax = plt.subplots()
-
-    ax.scatter(time_data, rg_data, s=2, alpha=0.2, color="grey", label="data")
-    ax.errorbar(
-        bin_centres,
-        mean,
-        yerr=std,
-        fmt="o-",
-        markersize=3,
-        capsize=2,
-        label=r"binned mean $\pm 1 \sigma$",
+    first_atom, last_atom = data[0], data[-1]
+    first_atom, last_atom = _unwrap_coords(
+        np.array([first_atom, last_atom]), box_size, titles
     )
-
-    ax.set_title(r"Time evolution of radius of gyration, $R_g$")
-    ax.set_xlabel("Timestep")
-    ax.set_ylabel(r"$R_g$")
-    ax.legend()
-
-    fig.savefig("figures/rg_over_time.png")
-    # plt.show()
+    e_e_distance = np.linalg.norm(last_atom - first_atom)
+    return e_e_distance
 
 
 def store_data_to_csv(
     data: np.ndarray | list, save_path: Path | str, header: np.ndarray | list
 ) -> None:
     with open(save_path, "w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, delimiter=" ")
         writer.writerow(header)
         writer.writerows(data)
 
@@ -81,13 +64,16 @@ if __name__ == "__main__":
     needed_cols = ["x", "y", "z", "ix", "iy", "iz"]
     # Iterate over chunks
     rg_sq_all = []
+    e_e_distance_all = []
     timesteps = []
+
     # test_chunk_params, test_chunk_data = next(load_dump_timestep(filepath, needed_cols))
     # print(
     #     calculate_radius_of_gyration(
     #         test_chunk_params["n_atoms"], test_chunk_data, test_chunk_params["box_size"]
     #     )
     # )
+
     for chunk_params, chunk_data in load_dump_timestep(filepath, needed_cols):
         rg_sq_all.append(
             calculate_radius_of_gyration(
@@ -97,10 +83,20 @@ if __name__ == "__main__":
                 chunk_params["used_titles"],
             )
         )
+
+        e_e_distance_all.append(
+            calculate_end_to_end_distance(
+                chunk_params["n_atoms"],
+                chunk_data,
+                chunk_params["box_size"],
+                chunk_params["used_titles"],
+            )
+        )
+
         timesteps.append(chunk_params["timestep"])
-    plot_rg_over_time(np.asarray(timesteps), np.asarray(rg_sq_all))
+
     store_data_to_csv(
-        np.vstack((timesteps, rg_sq_all)).T,
-        "data_files/rg_sq_data.dat",
-        ["timestep", r"$R_g$"],
+        np.vstack((timesteps, rg_sq_all, e_e_distance_all)).T,
+        "data_files/rg_ee.dat",
+        ["#", "timestep", "R_g", "e_e_distance"],
     )
