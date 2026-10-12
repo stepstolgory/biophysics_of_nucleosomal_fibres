@@ -2,7 +2,6 @@
 # Production run. Runs one job, or several, from a sweep folder made by
 # scripts/make_sweep.sh. Run from the repo root.
 #
-
 #   One job:         lmp -in <this script> -var sweep sweeps/NAME -var job 7 -log none
 #   Every job:       lmp -in <this script> -var sweep sweeps/NAME -log none
 #   Many at once:    scripts/run_sweep.sh sweeps/NAME 10
@@ -12,7 +11,6 @@
 # Don't start two partition-mode (or "every job") batches from the same folder at once:
 # they share the job counter file tmp.lammps.variable and skip each other's jobs.
 ###############################################
-
 
 include ${sweep}/sweep.lammps     # sets njobs
 variable nsteps index 10000000    # length of the production run
@@ -24,20 +22,16 @@ label next_job
 # RULE: below this label, define only string or equal variables, never index.
 include ${sweep}/jobs/job_${job}.lammps
 
-
 # Skip a job that has already finished. This must come before the log command,
 # which would empty the old log.
 variable done equal is_file(${run_dir}/final.data)
 if "${done} == 1" then "print 'Job ${job} already finished, skipping'" "jump SELF skip_job"
 
-
 include seeds/seed_${rep}.lammps  # same seeds for repeat r, whatever the parameters
-log ${run_dir}/log.lammps
+log ${run_dir}/log.out
 print "Job ${job}: E = ${E}, I = ${I}, wrapEuniform = ${wrapEuniform}, rep ${rep}, seeds ${seed} ${seed2}, start ${start}"
 
 units lj
-
-
 atom_style hybrid angle ellipsoid
 boundary p p p
 
@@ -97,7 +91,7 @@ variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 # Dump configs
 
 compute quat all property/atom quatw quati quatj quatk
-dump dum1 all custom 10000 ${run_dir}/duump.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4]
+dump dum1 all custom 10000 ${run_dir}/dump.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4]
 
 # Pair interactions
 pair_style      hybrid lj/cut 1.12246152962189 morse 1.12246152962189 exnusome 6.0
@@ -116,7 +110,7 @@ pair_coeff      4 5*22 lj/cut 0.0 1.0 1.12246152962189
 pair_coeff 1*22 23 lj/cut 1.0 1.0 1.12246152962189 # type 23 looks like a size 1 to everything
 pair_coeff 1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
 
-# add internucleosome interaction -- but attractrion set to zero to start with
+# add internucleosome interaction -- but attraction set to zero to start with
 #pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
 pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}

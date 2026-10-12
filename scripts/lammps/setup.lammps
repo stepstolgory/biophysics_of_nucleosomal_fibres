@@ -1,39 +1,40 @@
 ###############################################
-# LAMMPS script for nucleosomes and linkers
+# Set-up (equilibration) script for nucleosomes and linkers.
+# Starts from initial_positions/data_${id}.lammps with seeds/seed_${id}.lammps,
+# and writes init_configs/init_config_${id}.init plus its dump and log.
+# Run from the repo root.
 ###############################################
 
-#Paths
-# id = which starting structure to equilibriate (uses data_${id} and seed_${id})
-# One run: lmp -in <this script> -var id 3 -log none
-# Partition mode: mpirun -np 10 lmp --partition 10x1 -plog none -pscreen none -n <this script>
+# Paths
+# id = which starting structure to equilibrate
+# One run:        lmp -in <this script> -var id 3 -log none
+# Partition mode: mpirun -np 10 lmp -partition 10x1 -plog none -pscreen none -in <this script>
 # Don't start a partition-mode batch while another one runs from the same folder
 variable id uloop 10
 variable out index init_config_${id}
 variable dump_out index dump_initial_${id}
-log logs/initial/log_initial_${id}.out
+log init_configs/log_initial_${id}.out
 
+# Steps in each set-up stage (change with -var, e.g. -var nstack 600000)
 variable nsoft  index 50000
 variable nrelax index 250000
 variable nwrap  index 500000
 variable nstack index 150000
 
 ### Set the main parameters
-# Find out what the variabls actually represent
+# Find out what the variables actually represent
 variable E index 9.0 # these lines define variables used for the rest of the simulation. 
 variable I index 0.3
 variable wrapEuniform index 10.0
 
-# Seeds for the randomness engines
-# variable seed equal 54654651     # a seed for the thermostat
-# variable seed2 equal 84575451     # a seed for the other thermostat
-
+# Seeds for the two thermostats (sets seed and seed2)
 include seeds/seed_${id}.lammps
 
 ###
 # Box and units  (use LJ units and periodic boundaries)
 ###
 
-units lj                 # use lennard-jones (i.e. dimensionless) units. these units are reduced from conventional units decsribed at https://docs.lammps.org/99/units.html.
+units lj                 # use lennard-jones (i.e. dimensionless) units. these units are reduced from conventional units described at https://docs.lammps.org/99/units.html.
 atom_style hybrid angle ellipsoid   # atoms with bonds, angles and orientations. "angle" -> provides bonds and angle data, "ellipsoid" -> atomic data + rmass (per atom mass)
 
 boundary p p p           # all boundaries are periodic
@@ -53,12 +54,12 @@ read_data initial_positions/data_${id}.lammps # this file defines the starting p
 
 
 ###
-# Define groups. The atom positions, bonds, angles, and types are initally defined in the "start" data file.
+# Define groups. The atom positions, bonds, angles, and types are initially defined in the "start" data file.
 ###
 group all type 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 # technically this is predefined to just include all atoms
 group dna type 1 2 # atom types 1 and 2 are part of the dna group
 group smallcore type 3 # only atoms of type 3 make up the small core
-group bigcore type 4 # only atoms of type 4 make up the big code
+group bigcore type 4 # only atoms of type 4 make up the big core
 group patches type 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 # the patches are the "sticky bits" to which the DNA attracts
 group nucCentre type 23  # new type for the central bead in each nucleosome core
 
@@ -101,9 +102,9 @@ variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 ###
 # Dump configurations
 ###
-compute quat all property/atom quatw quati quatj quatk # compute a quantuty called quat on all atoms per atom. this quantity is a quaternion (rotation) for aspherical particles
+compute quat all property/atom quatw quati quatj quatk # compute a quantity called quat on all atoms per atom. this quantity is a quaternion (rotation) for aspherical particles
 # for the initial bit, dump quite often
-dump dum1 all custom 5000 sim_outputs/initial/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
+dump dum1 all custom 5000 init_configs/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
 # compute the quaternion which describes the orientation of each bead
 # output along with coordinates
 
@@ -157,15 +158,15 @@ fix 3 nuc rigid/small molecule langevin/rotation 1.0 1.0 9.28 2.78 ${seed2} ## v
 #compute nucenergy all pair exnusome
 thermo 50000
 thermo_style   custom   step  temp  epair  #c_nucenergy
-### Change the temperature comutation so it is aware of ellipsoids
+### Change the temperature computation so it is aware of ellipsoids
 compute t1 all temp/asphere dof all
 thermo_modify temp t1
 ############################################################################
-# If I understand correctly this is kinda the equillibriation time
+# If I understand correctly this is kinda the equilibration time
 
 # set timestep of integrator, interactions == soft potentials to remove overlaps
 timestep 0.005
-run ${nsoft} # total so far 50000
+run ${nsoft}
 
 
 ###
@@ -197,7 +198,7 @@ pair_coeff      4 5*22 lj/cut 0.0 1.0 1.12246152962189
 
 pair_coeff 1*22 23 lj/cut 1.0 1.0 1.12246152962189 # type 23 looks like a size 1 to everything
 
-# add internucleosome interaction -- but attractrion set to zero to start with
+# add internucleosome interaction -- but attraction set to zero to start with
 #pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
 pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
 
@@ -213,13 +214,13 @@ compute nucenergy all pair exnusome
 compute wrapenergy all pair morse
 thermo 50000
 thermo_style   custom   step  temp  epair  c_nucenergy c_wrapenergy
-### Change the temperature comutation so it is aware of ellipsoids
+### Change the temperature computation so it is aware of ellipsoids
 ### and switch off normalisation so that energies are the totals, not energy per atom
 thermo_modify temp t1 norm no 
 ############################################################################
 
 # run with correct repulsive interactions
-run ${nrelax} # total so far 350000
+run ${nrelax}
 
 
 ######
@@ -228,11 +229,11 @@ run ${nrelax} # total so far 350000
 
 # switch on attraction between proteins and DNA so they wrap up
 pair_coeff      1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
-run ${nwrap} # total so far 850000
+run ${nwrap}
 
 # and between nucleosomes so they stack
 pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
-run ${nstack} # total so far 1000000
+run ${nstack}
 
 
 ## Output final config

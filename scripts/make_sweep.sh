@@ -24,7 +24,6 @@ while getopts "n:E:I:W:r:s:" opt; do
   E) E_LIST=$OPTARG ;;
   I) I_LIST=$OPTARG ;;
   W) W_LIST=$OPTARG ;;
-
   r) REPS=$OPTARG ;;
   s) START_DIR=$OPTARG ;;
   *) exit 1 ;;
@@ -55,14 +54,12 @@ mkdir -p "$DIR/jobs" "$DIR/runs"
 {
   echo "# Made $(date '+%Y-%m-%d %H:%M') at commit $(git rev-parse --short HEAD)"
   echo "# Command: $0 -n \"$NAME\" -E \"$E_LIST\" -I \"$I_LIST\" -W \"$W_LIST\" -r $REPS -s \"$START_DIR\""
-
   echo "# job E I wrapEuniform rep start run_dir"
 } >"$DIR/jobs.txt"
 
 job=0
 for ((rep = 1; rep <= REPS; rep++)); do # rep is the outer loop
   for I in $I_LIST; do
-
     for E in $E_LIST; do
       for W in $W_LIST; do
         job=$((job + 1))
@@ -71,7 +68,6 @@ for ((rep = 1; rep <= REPS; rep++)); do # rep is the outer loop
         mkdir -p "$run_dir"
 
         # string variables, so the next job in the same LAMMPS process can replace them
-
         cat >"$DIR/jobs/job_${job}.lammps" <<END
 variable E            string $E
 variable I            string $I

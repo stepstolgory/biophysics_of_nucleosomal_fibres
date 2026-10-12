@@ -11,6 +11,9 @@ This file describes various tests that were run in many areas of the program.
 | T2 | 2026-10-08 16:25 | Split main script | Passed |
 | T3 | 2026-10-08 18:36 | MPI main version | Completed|
 | T4 | 2026-10-08 19:24 | 32 process MPI main | Completed|
+| T5 | 2026-10-09 | Set-up from ID only | Failed |
+| T6 | 2026-10-09 | Set-up from ID, correct atom format | Failed |
+| T7 | 2026-10-09 | Set-up output file names | Passed |
 
 ---
 

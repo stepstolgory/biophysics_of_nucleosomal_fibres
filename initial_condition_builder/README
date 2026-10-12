@@ -37,7 +37,8 @@ make
 ######################
 ## Run a simulation
 
-~/path/to/lmp_mpi < in.lammps_twistable_nucInteractions
+# see README.md in the repo root, for example (from the repo root):
+LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 1 -log none
 
 
 ## this incudes an equilibration phase, where different parts of the

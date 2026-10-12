@@ -217,12 +217,19 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# LAMMPS dump files
+# LAMMPS outputs: dumps, data files, starting configurations and logs
 *.nucleosomes
 *.data
 *.init
 *.out
 
-# LAMMPS executeable
+# Files LAMMPS leaves in the folder it was started from (default log, partition mode)
+log.lammps*
+screen.[0-9]*
+tmp.lammps.variable*
+
+# LAMMPS executable
 LAMMPS/
 
+# Compiled initial condition builder (build it with make)
+initial_condition_builder/generate_ic
