@@ -3,14 +3,25 @@
 ###############################################
 
 #Paths
-variable id index 1
+# id = which starting structure to equilibriate (uses data_${id} and seed_${id})
+# One run: lmp -in <this script> -var id 3 -log none
+# Partition mode: mpirun -np 10 lmp --partition 10x1 -plog none -pscreen none -n <this script>
+# Don't start a partition-mode batch while another one runs from the same folder
+variable id uloop 10
 variable out index init_config_${id}
 variable dump_out index dump_initial_${id}
+log logs/initial/log_initial_${id}.out
+
+variable nsoft  index 50000
+variable nrelax index 250000
+variable nwrap  index 500000
+variable nstack index 150000
+
 ### Set the main parameters
 # Find out what the variabls actually represent
-variable E equal 9.0 # these lines define variables used for the rest of the simulation. 
-variable I equal 0.3
-variable wrapEuniform equal 10.0
+variable E index 9.0 # these lines define variables used for the rest of the simulation. 
+variable I index 0.3
+variable wrapEuniform index 10.0
 
 # Seeds for the randomness engines
 # variable seed equal 54654651     # a seed for the thermostat
@@ -154,7 +165,7 @@ thermo_modify temp t1
 
 # set timestep of integrator, interactions == soft potentials to remove overlaps
 timestep 0.005
-run 50000  # total so far 50000
+run ${nsoft} # total so far 50000
 
 
 ###
@@ -208,7 +219,7 @@ thermo_modify temp t1 norm no
 ############################################################################
 
 # run with correct repulsive interactions
-run 250000  # total so far 350000
+run ${nrelax} # total so far 350000
 
 
 ######
@@ -217,11 +228,11 @@ run 250000  # total so far 350000
 
 # switch on attraction between proteins and DNA so they wrap up
 pair_coeff      1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
-run 500000  # total so far 850000
+run ${nwrap} # total so far 850000
 
 # and between nucleosomes so they stack
 pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
-run 150000 # total so far 1000000
+run ${nstack} # total so far 1000000
 
 
 ## Output final config
