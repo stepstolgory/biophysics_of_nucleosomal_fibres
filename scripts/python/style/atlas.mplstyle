@@ -1,0 +1,37 @@
+# atlas.mplstyle: the parts of atlasify that matplotlib settings can do
+
+# Font (atlasify uses its bundled Nimbus Sans, a free Helvetica clone)
+font.family     : sans-serif
+font.sans-serif : Nimbus Sans, Nimbus Sans L, Helvetica, Arial, DejaVu Sans
+
+# Ticks: pointing in, on all four sides, minor ticks on
+xtick.direction     : in
+ytick.direction     : in
+xtick.top           : True
+ytick.right         : True
+xtick.minor.visible : True
+ytick.minor.visible : True
+
+# Tick lengths (atlasify: major 6, minor 3)
+xtick.major.size : 6
+ytick.major.size : 6
+xtick.minor.size : 3
+ytick.minor.size : 3
+
+# Legend with no frame, top right
+legend.frameon : False
+legend.loc     : upper right
+
+# Axis labels at the right end of x and the top of y
+# (what atlasify.monkeypatch_axis_labels() does)
+xaxis.labellocation : right
+yaxis.labellocation : top
+
+# Colours: your blue and red first, then matplotlib's defaults (orange moved to 4th,
+# as the default red was too close to e00000).
+# Write hex colours WITHOUT the hash: in this file a hash starts a comment.
+axes.prop_cycle : cycler('color', ['0066cc', 'e00000', '2ca02c', 'ff7f0e', '9467bd', '8c564b', 'e377c2', '7f7f7f', 'bcbd22', '17becf'])
+figure.figsize : 6, 4.2
+font.size      : 16
+savefig.dpi    : 300
+savefig.bbox   : tight
