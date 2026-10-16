@@ -234,5 +234,5 @@ LAMMPS/
 # Compiled initial condition builder (build it with make)
 initial_condition_builder/generate_ic
 # Symlink to data for vmd
-test_dumps/
+test_dumps
 
