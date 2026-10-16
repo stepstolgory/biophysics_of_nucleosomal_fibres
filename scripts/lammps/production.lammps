@@ -108,7 +108,7 @@ pair_coeff      5*22 5*22 lj/cut 1.0 1.0 1.12246152962189
 pair_coeff      4 5*22 lj/cut 0.0 1.0 1.12246152962189
 
 pair_coeff 1*22 23 lj/cut 1.0 1.0 1.12246152962189 # type 23 looks like a size 1 to everything
-pair_coeff 1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
+pair_coeff 1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7 # Change wrapEuniform to ammend how wrapped the DNA is (10-15 is the "large" energy)
 
 # add internucleosome interaction -- but attraction set to zero to start with
 #pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
