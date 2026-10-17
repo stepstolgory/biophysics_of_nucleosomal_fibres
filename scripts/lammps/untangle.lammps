@@ -91,7 +91,7 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 
 bond_style harmonic 
 bond_coeff 1 1000.0 0.7
-comm_modify cutoff 3
+comm_modify cutoff 5
 
 ###
 # Set up fixes. Things that happen at every timestep
