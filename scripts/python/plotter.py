@@ -192,14 +192,14 @@ def main():
 
     if "ee" in args.p:
         plot_ee_over_time(
-            data[:, 0], data[:, 2], file_name=_out_name("ee", args), show=args.show
+            data[:, 0], data[:, 1], file_name=_out_name("ee", args), show=args.show
         )
 
     if "rgh" in args.p:
         plot_rg_histogram(data[:, 1], file_name=_out_name("rgh", args), show=args.show)
 
     if "eeh" in args.p:
-        plot_ee_histogram(data[:, 2], file_name=_out_name("eeh", args), show=args.show)
+        plot_ee_histogram(data[:, 1], file_name=_out_name("eeh", args), show=args.show)
 
     if args.show:
         plt.show()
