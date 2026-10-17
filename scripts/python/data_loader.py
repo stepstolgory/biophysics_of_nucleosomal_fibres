@@ -67,10 +67,14 @@ def load_dump_timestep(filepath: Path, cols: list | None = None, skip: int = 0):
                 ]
             )
 
+            # Box type from the same "ITEM: BOX BOUNDS" line (line 4 in the chunk)
+            box_type = np.array([chunk[4].split()[i] for i in (3, 4, 5)])
+
             chunk_params = {
                 "timestep": int(chunk[1]),
                 "n_atoms": int(chunk[3]),
                 "box_size": box_size,
+                "box_type": box_type,
                 "atom_headings": atom_headings,
                 "used_titles": used_titles,
             }
