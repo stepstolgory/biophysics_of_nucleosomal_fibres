@@ -5,18 +5,6 @@ This file describes various tests that were run in many areas of the program.
 ### LAMMPS tests
 
 
-| ID | Date | Test | Status |
-|---|---|---|---|
-| T1 | 2026-10-08 16:03 | Split set-up script | Passed |
-| T2 | 2026-10-08 16:25 | Split main script | Passed |
-| T3 | 2026-10-08 18:36 | MPI main version | Completed|
-| T4 | 2026-10-08 19:24 | 32 process MPI main | Completed|
-| T5 | 2026-10-09 | Set-up from ID only | Failed |
-| T6 | 2026-10-09 | Set-up from ID, correct atom format | Failed |
-| T7 | 2026-10-09 | Set-up output file names | Passed |
-
----
-
 #### T1: Split set-up script (2026-10-08 16:03)
 
 **Aim:** Check that the new set-up (equilibration) script runs on its own and writes a data file.
@@ -225,7 +213,7 @@ LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out shrink_test_1 
 
 **Result:** The data dump file contains valid looking data. Importantly the columns ix, iy, iz are now obsolete since they are always 0. The box dimensions change every time step (unsurprisingly) so will need to change the quantity computation scripts to take that into account. (Most likely just not unwrapping the coordinates). Movie looks fine at first glance.
 
-#### T9: Test shrink-wrapped box for full run time
+#### T9: Test shrink-wrapped box for full run time 2026-10-17
 
 **Aim:** Running this setup for `id = 3` should produce the identical (unwrapped) positions of the periodic box of the same id, as long as they are ran for the same number of iterations.
 
@@ -249,3 +237,54 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out shrink_t
 
 **Next:** Try the shrink-wrapped box with minimum value mode by setting the minimum value to be -50 to 50 for all 3 dimensions. This will take longer as the box will be at least the same at all steps but it should more decisively determine what the cause of the difference is. 
 
+#### T10: Test shrink-wrapped box with minimum size 2026-10-17 10:58
+
+**Aim:** Check if setting boundary conditions to `m` with minimum size given in the initial conditions file (should be -50 to 50 for each dimension) results in the same output as `s` or as `p` or neither. This should determine the effect periodicity had on the simulation.
+
+**Setup:**
+ - Changed boundary conditions in `setup.lammps`
+ - Run it with the same parameters as in T9 but box = shrink wrapped with minimum
+ - Compare all three of the files to eachother with `scripts/python/tests/compare_positions.py`
+ - Compare calculated values of R_g as well using  `scripts/python/calculate_rg.py` and `scripts/python/plotter.py`
+ - Git commit: `6406fe0`. Branch: `shrink_wrapped_box`
+
+**Command:**
+``` bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out min_shrink_test_1 -var dump_out min_shrink_test_1 -log init_configs/min_shrink_test_1.out -screen none > /dev/null 2>&1 &
+```
+
+**Outputs:**
+  - `init_configs/min_shrink_test_1.nucleosomes`
+  - `init_configs/min_shrink_test_1.init`
+  - `init_configs/log_min_shrink_test_1.out`
+  - `figures/min_shrink_rg.png`
+  - `figures/min_shrink_rgh.png`
+  - And other plots of similar names for shrink wrapped and periodic boxes
+    These plots will most likely be deleted at a later date.
+
+**Result:** All three files are different and end up in completely different configurations once again starting from frame 1. The radius of gyration values are also all different and the histograms don't match at all -> the behaviour is not the same. This is an interesting result I should discuss with Chris because I expected at least `m` and `s` to be the same for the same seeds. The minimum box for `m` was correctly of size 100 in each dimension.
+
+**Next:** Importantly, this is not necessarily a bad thing since the extra atomic interactions due to periodicity shouldn't be there (as per previous discussion with Chris) so now it's more of a decision of whether doing `m` or `s`. This is something to discuss in the Tuesday meeting. Next test is to run one of the box styles, take `s`, for a longer equilibration since I saw that the nucleosomes don't get stuck all the way and the nucleosomes don't fully stuck.
+
+#### T11: Equilibrate shrink wrapped box for more timesteps
+
+
+
+**Aim:** See how double the equilibration steps affect the initial conditions and have a better initial conditions file to start implementing the untangling code. Also focus on the wrapping and stacking time steps since that is what isn't happening in the vmd movie
+
+**Setup:** 
+  - Run the `setup.lammps` script with all time steps doubled
+  - Non-default parameters: nsoft = 100000, nrelax = 500000, nwrap = 1000000, nstack = 300000 (Exactly doubled step counts), id = 3, boundary = s s s 
+  - Git commit: `a81edda`. Branch: `shrink_wrapped_box`
+
+**Command:**
+``` bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nsoft 100000 -var nrelax 500000 -var nwrap 1000000 -var nstack 300000 -screen none > /dev/null 2>&1 &
+```
+
+**Outputs:**
+  - `init_configs/init_config_3.init`
+  - `sim_outputs/initial/dump_initial_3.nucleosomes`
+  - `init_configs/log_initial_3.out`
+
+  
