@@ -142,10 +142,6 @@ run 10000
 include scripts/lammps/soft.lammps
 run ${nsoft}
 
-neigh_modify exclude none
-neigh_modify exclude molecule/intra nuc
-neigh_modify exclude group bigcore patches
-comm_modify cutoff 0.0
 
 include scripts/lammps/relax.lammps
 compute nucenergy all pair exnusome
