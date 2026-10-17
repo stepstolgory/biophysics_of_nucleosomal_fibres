@@ -134,7 +134,7 @@ run ${nuntangle}
 fix myIndenter1 startBead indent 100.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
 fix myIndenter2 endBead indent 100.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
-run 2*${nuntangle}
+run 10000
 
 ###
 # Switch pair attractions back on and go through usual stages (repulsive only)
