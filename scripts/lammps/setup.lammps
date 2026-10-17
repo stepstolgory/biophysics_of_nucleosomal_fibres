@@ -37,7 +37,7 @@ include seeds/seed_${id}.lammps
 units lj                 # use lennard-jones (i.e. dimensionless) units. these units are reduced from conventional units described at https://docs.lammps.org/99/units.html.
 atom_style hybrid angle ellipsoid   # atoms with bonds, angles and orientations. "angle" -> provides bonds and angle data, "ellipsoid" -> atomic data + rmass (per atom mass)
 
-boundary m m m           # all boundaries are shrink_wrapped_box
+boundary s s s           # all boundaries are shrink_wrapped_box
 
 
 ###
