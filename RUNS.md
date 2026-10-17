@@ -204,3 +204,48 @@ nohup LAMMPS/lmp_mpi -in scripts/in.lammps_twistable_nucInteractions -var id 1 -
 **Result:** Correct file names.
 
 **Next:** Create a new shell script for running the main simulations
+
+#### T8: Test changes brought about by using shrink-wrapped box
+
+**Aim:** See what happens to the dump file, the movie, and the plots when changing the boundary conditions from p p p to s s s  
+
+**Setup:**
+  - Script: `scripts/lammps/setup.lammps`
+  - Parameters: E = 9.0, I = 0.3, 20 nucleosomes, id = 3, nsoft = 25000, nrelax = 12500, nwrap = 250000, nstack = 75000
+  - Git commit: `8477920`. Branch: `shrink_wrapped_box`
+
+**Command:**
+```bash
+LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out shrink_test_1 -var dump_out shrink_test_1 -var nsoft 25000 -var nrelax 125000 -var nwrap 250000 -var nstack 75000
+```
+
+**Outputs:**
+  - `init_configs/shrink_test_1.nucleosomes`
+  - `init_configs/shrink_test_1.init`
+
+**Result:** The data dump file contains valid looking data. Importantly the columns ix, iy, iz are now obsolete since they are always 0. The box dimensions change every time step (unsurprisingly) so will need to change the quantity computation scripts to take that into account. (Most likely just not unwrapping the coordinates). Movie looks fine at first glance.
+
+#### T9: Test shrink-wrapped box for full run time
+
+**Aim:** Running this setup for `id = 3` should produce the identical (unwrapped) positions of the periodic box of the same id, as long as they are ran for the same number of iterations.
+
+**Setup:** 
+  - Run the setup script on the `shrink_wrapped_box` branch with default run times
+  - Pass the output of this script and the periodic box counterpart to `compare_positions.py`
+  - Parameters: E = 9.0, I = 0.3, 20 nucleosomes, id = 3, box = shrink wrapped
+  - Git commit: `8477921`. Branch: `shrink_wrapped_box`
+
+**Command:**
+```bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out shrink_test_2 -var dump_out shrink_test_2 -screen none > /dev/null 2>&1
+```
+
+**Outputs:**
+  - `init_configs/shrink_test_2.nucleosomes`
+  - `init_configs/shrink_test_2.init`
+  - `init_configs/log_shrink_test2.out`
+
+**Result:** Even with the same seeds the atom positions start differing considerably staring from the first (non initial) frame. To me this suggests that the atoms in the periodic box interact across the boundary at all times because I don't otherwise see what should be different between the two.
+
+**Next:** Try the shrink-wrapped box with minimum value mode by setting the minimum value to be -50 to 50 for all 3 dimensions. This will take longer as the box will be at least the same at all steps but it should more decisively determine what the cause of the difference is. 
+
