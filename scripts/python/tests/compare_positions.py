@@ -22,7 +22,6 @@ def main():
     frames2 = data_loader.load_dump_timestep(args.file2, COLUMNS)
 
     for n, (f1, f2) in enumerate(zip_longest(frames1, frames2)):
-        print(n)
         assert (
             f1 is not None and f2 is not None
         ), "The files have different numbers of frames."
@@ -34,6 +33,7 @@ def main():
         data2 = _unwrap_coords(data2, params2["box_size"], params2["used_titles"])
 
         assert np.allclose(data1, data2), f"Frame {n} differs."
+    print("[PASSED] All atom positions match in all frames.")
 
 
 if __name__ == "__main__":
