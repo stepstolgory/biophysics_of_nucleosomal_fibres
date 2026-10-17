@@ -266,25 +266,81 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var out min_shri
 
 **Next:** Importantly, this is not necessarily a bad thing since the extra atomic interactions due to periodicity shouldn't be there (as per previous discussion with Chris) so now it's more of a decision of whether doing `m` or `s`. This is something to discuss in the Tuesday meeting. Next test is to run one of the box styles, take `s`, for a longer equilibration since I saw that the nucleosomes don't get stuck all the way and the nucleosomes don't fully stuck.
 
-#### T11: Equilibrate shrink wrapped box for more timesteps
+#### T11: Doubling every run time
+> [!NOTE]
+> Accidentally deleted this so not all info present
+
+**Setup:** Doubled all the run times for the four equilibration steps and run with boundary = s s s.
+
+**Result:** The final configuration in the movie is extremely messy with not all DNA wrapped and lots of crossovers.
+
+
+#### T12: Return nsoft and nrelax back to defaults
 
 
 
-**Aim:** See how double the equilibration steps affect the initial conditions and have a better initial conditions file to start implementing the untangling code. Also focus on the wrapping and stacking time steps since that is what isn't happening in the vmd movie
+**Aim:** See how different equilibration steps affect the initial conditions and have a better initial conditions file to start implementing the untangling code. Also focus on the wrapping and stacking time steps since that is what isn't happening in the vmd movie
 
 **Setup:** 
   - Run the `setup.lammps` script with all time steps doubled
-  - Non-default parameters: nsoft = 100000, nrelax = 500000, nwrap = 1000000, nstack = 300000 (Exactly doubled step counts), id = 3, boundary = s s s 
-  - Git commit: `a81edda`. Branch: `shrink_wrapped_box`
+  - Non-default parameters: nsoft = 50000, nrelax = 250000, nwrap = 1000000, nstack = 300000 , id = 3, boundary = s s s 
+  - Git commit: `d9c9e09`. Branch: `shrink_wrapped_box`
 
 **Command:**
 ``` bash
-nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nsoft 100000 -var nrelax 500000 -var nwrap 1000000 -var nstack 300000 -screen none > /dev/null 2>&1 &
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nsoft 50000 -var nrelax 250000 -var nwrap 1000000 -var nstack 300000 -screen none > /dev/null 2>&1 &
 ```
 
 **Outputs:**
-  - `init_configs/init_config_3.init`
-  - `sim_outputs/initial/dump_initial_3.nucleosomes`
-  - `init_configs/log_initial_3.out`
+  - `test_dumps/boundary_s_id_3_increased_nsoft_nwrapped.nucleosomes`
 
-  
+**Result:** The final state looks better but still not good. Lots of crossovers, some nucleosomes have no wrapped DNA at all. 
+
+**Next:** Gonna try doubling nwrap and nstack again with default nsoft and nrelax
+
+
+
+#### T13: Double nwrap and nstack again 
+
+
+
+**Aim:** See if even more steps will fix the not wrapping / cross overs for id = 3
+
+**Setup:** 
+  - Run the `setup.lammps` script 
+  - Non-default parameters: nsoft = 50000, nrelax = 250000, nwrap = 2000000, nstack = 600000 , id = 3, boundary = s s s 
+  - Git commit: `d9c9e09`. Branch: `shrink_wrapped_box`
+
+**Command:**
+``` bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nwrap 2000000 -var nstack 600000 -screen none > /dev/null 2>&1 &
+```
+
+**Outputs:**
+  - `sim_outputs/initial/boundary_s_id_3_even_more_increased_nsoft_nwrapped.nucleosomes`
+
+
+**Result:** Still just as bad. DNA unwrapped and constant crossings
+
+**Next:** Gonna try decreasing nstack but keeping the wrapping high since it still doesn't want to wrap all the way and is overstacking
+
+#### T14: Decrease nstack and keep large nwrap
+
+**Aim:** See effect of decreasing nstack
+
+**Setup:** 
+  - Run the `setup.lammps` script 
+  - Non-default parameters: nsoft = 50000, nrelax = 250000, nwrap = 1000000, nstack = 100000 , id = 3, boundary = s s s 
+  - Git commit: `d9c9e09`. Branch: `shrink_wrapped_box`
+
+**Command:**
+``` bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nwrap 1000000 -var nstack 100000 -screen none > /dev/null 2>&1 &
+```
+
+**Outputs:**
+  - `sim_outputs/initial/boundary_s_id_3_increase_nwrap_decrease_nstack.nucleosomes`
+
+**Result:** Still not fully wrapped and unsurprisingly less stacked (also was never wrapped in the movie even before the stacking stage)
+
+**Next:** Will need to discuss with Chris so for now move on to implementing the untangling (since maybe this will solve itself after)
