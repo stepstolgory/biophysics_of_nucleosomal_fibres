@@ -143,44 +143,44 @@ include scripts/lammps/soft.lammps
 run ${nsoft}
 
 
-include scripts/lammps/relax.lammps
-compute nucenergy all pair exnusome
-compute wrapenergy all pair morse
-thermo 5000
-thermo_style   custom   step  temp  epair  c_nucenergy c_wrapenergy
-### Change the temperature computation so it is aware of ellipsoids
-### and switch off normalisation so that energies are the totals, not energy per atom
-thermo_modify temp t1 norm no 
-############################################################################
-
-run ${nrelax}
-
-###
-# Step where twisting stiffness is reduced, ran with FENE potentials for a few 1000 steps and then ran again at normal value
-
-angle_coeff 2 polytorsion 70.0 5 
-
-run ${nrelax}
-
-angle_coeff 2 polytorsion 70.0 44.12
-
-run ${nrelax}
-
-###
-# Switch off the indenters switch on wrapping run for a few 10000s steps
-
-unfix myIndenter1
-unfix myIndenter2
-
-include scripts/lammps/wrap.lammps
-
-run ${nwrap}
-
-###
-# Turn on stacking, run for a while more
-
-include scripts/lammps/stack.lammps
-
-run ${nstack}
-
+#include scripts/lammps/relax.lammps
+#compute nucenergy all pair exnusome
+#compute wrapenergy all pair morse
+#thermo 5000
+#thermo_style   custom   step  temp  epair  c_nucenergy c_wrapenergy
+#### Change the temperature computation so it is aware of ellipsoids
+#### and switch off normalisation so that energies are the totals, not energy per atom
+#thermo_modify temp t1 norm no 
+#############################################################################
+#
+#run ${nrelax}
+#
+####
+## Step where twisting stiffness is reduced, ran with FENE potentials for a few 1000 steps and then ran again at normal value
+#
+#angle_coeff 2 polytorsion 70.0 5 
+#
+#run ${nrelax}
+#
+#angle_coeff 2 polytorsion 70.0 44.12
+#
+#run ${nrelax}
+#
+####
+## Switch off the indenters switch on wrapping run for a few 10000s steps
+#
+#unfix myIndenter1
+#unfix myIndenter2
+#
+#include scripts/lammps/wrap.lammps
+#
+#run ${nwrap}
+#
+####
+## Turn on stacking, run for a while more
+#
+#include scripts/lammps/stack.lammps
+#
+#run ${nstack}
+#
 write_data init_configs/untangled/${out}.init nocoeff
