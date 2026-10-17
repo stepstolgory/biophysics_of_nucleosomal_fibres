@@ -144,7 +144,7 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 #
 # pair_coeff 1*23 23 100.0 1.12246152962189 # diameter 1
 
-include soft.lammps
+include scripts/lammps/soft.lammps
 
 ###
 # Set up fixes. Things that happen at every timestep
@@ -211,7 +211,7 @@ run ${nsoft}
 # neigh_modify exclude group bigcore patches
 #
 
-include relax.lammps
+include scripts/lammps/relax.lammps
 
 ##### Output thermodynamic info  (temperature, energy, pressure, etc.) #####
 compute nucenergy all pair exnusome
@@ -233,12 +233,12 @@ run ${nrelax}
 
 # # switch on attraction between proteins and DNA so they wrap up
 # pair_coeff      1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
-include wrap.lammps
+include scripts/lammps/wrap.lammps
 run ${nwrap}
 
 # # and between nucleosomes so they stack
 # pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
-include stack.lammps
+include scripts/lammps/stack.lammps
 run ${nstack}
 
 
