@@ -1,0 +1,3 @@
+
+# switch on attraction between proteins and DNA so they wrap up
+pair_coeff      1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7

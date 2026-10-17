@@ -1,0 +1,97 @@
+variable id uloop 10
+variable out index init_config_${id}
+variable dump_out index dump_initial_${id}
+log init_config/logs/log_untangle_${id}.out
+
+variable nuntangle index 5000 #This is a placeholder number for now
+
+
+variable E index 9.0
+variable I index 0.3
+variable wrapEuniform index 10.0
+
+include seeds/seed_${id}.lammps
+
+units lj
+atom_style hybrid angle ellipsoid
+
+boundary p p p 
+
+neighbour 1.9 bin
+neigh_modify ever 1 delay 1 check yes
+
+read_data init_configs/init_config_${id}.init
+
+
+group all type 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 # technically this is predefined to just include all atoms
+group dna type 1 2 # atom types 1 and 2 are part of the dna group
+group smallcore type 3 # only atoms of type 3 make up the small core
+group bigcore type 4 # only atoms of type 4 make up the big core
+group patches type 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 # the patches are the "sticky bits" to which the DNA attracts
+group nucCentre type 23  # new type for the central bead in each nucleosome core
+
+group notnuc molecule 0        # a group for everything which is not in a rigid body. all atoms of molecule ID 0
+group nuc molecule > 0  # a group for stuff in rigid bodies. all other atoms
+
+group startBead id 1
+variable Natoms equal count(all)
+group endBead id ${Natoms}
+
+## Inter nucleosome interaction parameters (will be turned off at first)
+variable nucE_FF equal ${E}  ## depth of face-to-face well
+variable nucE_FS equal ${I}   ## depth of face-to-side well
+variable nucE_SS equal 0.0      ## depth of side-to-side-A well
+variable nucE_S0 equal 0.0      ## depth of side-to-side-B well  
+#
+variable nucL_D0 equal 0.784
+variable nucR_FF equal 2.752    ## range of face-to-face
+variable nucR_FS equal 3.508    ## range of face-to-side
+variable nucR_SS equal 4.988    ## range of side-to-side-A
+variable nucR_S0 equal 4.944    ## range of side-to-side-B
+
+# convert these to the actual parameters needed for the pair styles
+variable nucE_a equal ${nucE_S0}
+variable nucE_b equal ${nucE_SS}-${nucE_S0}
+variable nucE_c equal 2.0*${nucE_FS}-2.0*${nucE_S0}
+variable nucE_d equal ${nucE_FF}-2.0*${nucE_FS}-${nucE_SS}+2.0*${nucE_S0}
+variable nucE_e equal 0.0 ## Will need to change later--add 4th order correction
+variable nucA_a equal 0.64930686589/${nucL_D0}
+variable nucR_a equal ${nucR_S0}
+variable nucR_b equal ${nucR_SS}-${nucR_S0}
+variable nucR_c equal 2.0*${nucR_FS}-2.0*${nucR_S0}
+variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
+
+
+
+###
+# Switch off all interactions and switch on the indenters to pull apart the fibre
+
+
+neigh_modify exclude group all all # this switches off all interactions though I technically never enabled any
+
+fix myIndenter1 startBead indent 1.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 1.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+
+run ${nuntangle}
+#Increase energy gradually
+fix myIndenter1 startBead indent 10.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 10.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+
+run ${nuntangle}
+
+fix myIndenter1 startBead indent 100.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 100.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+
+run 2*${nuntangle}
+
+###
+# Switch pair attractions back on and go through usual stages (repulsive only)
+
+neigh_modify exclude none
+neigh_modify exclude molecule/intra nuc
+neigh_modify exclude group bigcore patches
+
+
+
+
+

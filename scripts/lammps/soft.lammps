@@ -1,0 +1,26 @@
+###
+# pair and bond interactions - start with 'soft' potentials
+###
+
+## Between bonded atoms
+bond_style   harmonic # harmonic uses potential E = K(r-r_0)^2
+# For style harmonic, specify:
+#   * bond type
+#   * K (energy/distance^2) 
+#   * R0 (distance)
+bond_coeff   1   1000.0   0.7
+
+## Between non-bonded atoms
+pair_style soft 1.12246152962189 # soft computes pairwise interactions with the formula E = A[1 + cos(pi*r/r_c)] for r < r_c
+pair_coeff 1*3 1*3  100.0 1.12246152962189 
+pair_coeff 4 4  100.0 1.53242039900875 # these have diameter 1.365232
+pair_coeff 1*3 4  100.0 1.32744096431532 # diameter 0.5*(1+1.365232)
+pair_coeff 1*3 5*22 0.0 1.12246152962189
+pair_coeff 4 5*22 100.0 1.32744096431532 # diameter 0.5*(1+1.365232)
+pair_coeff 5*22 5*22 100.0 1.12246152962189 
+
+pair_coeff 1*23 23 100.0 1.12246152962189 # diameter 1
+
+
+
+
