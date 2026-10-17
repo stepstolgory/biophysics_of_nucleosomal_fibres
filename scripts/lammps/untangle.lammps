@@ -89,8 +89,9 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 #TODO: Check with Chris
 # Have to set up a bond style but not sure what to pick between `none` and `zero`
 
-bond_style none 
-
+bond_style harmonic 
+bond_coeff 1 1000.0 0.7
+comm_modify cutoff 2
 
 ###
 # Set up fixes. Things that happen at every timestep
