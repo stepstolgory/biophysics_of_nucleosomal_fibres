@@ -10,6 +10,11 @@ variable E index 9.0
 variable I index 0.3
 variable wrapEuniform index 10.0
 
+variable nsoft  index 50000
+variable nrelax index 250000
+variable nwrap  index 500000
+variable nstack index 1500000
+
 include seeds/seed_${id}.lammps
 
 units lj
@@ -61,6 +66,47 @@ variable nucR_b equal ${nucR_SS}-${nucR_S0}
 variable nucR_c equal 2.0*${nucR_FS}-2.0*${nucR_S0}
 variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 
+###
+# Dump configurations
+###
+
+compute quat all property/atom quatw quati quatj quatk # compute a quantity called quat on all atoms per atom. this quantity is a quaternion (rotation) for aspherical particles
+# for the initial bit, dump quite often
+dump dum1 all custom 5000 init_configs/untangled/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
+# compute the quaternion which describes the orientation of each bead
+# output along with coordinates
+
+###
+# Set up angle interactions 
+###
+
+## angles
+angle_style  hybrid cosine polytorsion polytorsionend # cosine uses potential E = K[1+cos(theta)], polytorsion is defined somewhere in this paper https://arxiv.org/abs/1404.1704
+angle_coeff   1 cosine 29.41  # gives persistence length of 50nm for 5 bp beads
+angle_coeff   2 polytorsion 70.0 44.12
+angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
+
+
+###
+# Set up fixes. Things that happen at every timestep
+###
+
+fix 1 notnuc nve/asphere                            # NVE integrator
+fix 2 notnuc langevin 1.0 1.0 0.5 ${seed} angmom 3.333  # langevin thermostat
+#fix 3 nuc rigid/small molecule langevin 1.0 1.0 1.0 ${seed2}
+fix 3 nuc rigid/small molecule langevin/rotation 1.0 1.0 9.28 2.78 ${seed2} ## version with correct translational and rotational drag
+
+
+##### Output thermodynamic info  (temperature, energy, pressure, etc.) #####
+#compute nucenergy all pair exnusome
+thermo 50000
+thermo_style   custom   step  temp  epair  #c_nucenergy
+### Change the temperature computation so it is aware of ellipsoids
+compute t1 all temp/asphere dof all
+thermo_modify temp t1
+
+# set timestep of integrator, interactions == soft potentials to remove overlaps
+timestep 0.005
 
 
 ###
@@ -87,11 +133,51 @@ run 2*${nuntangle}
 ###
 # Switch pair attractions back on and go through usual stages (repulsive only)
 
+include scripts/lammps/soft.lammps
+run ${nsoft}
+
 neigh_modify exclude none
 neigh_modify exclude molecule/intra nuc
 neigh_modify exclude group bigcore patches
 
+include scripts/lammps/relax.lammps
+compute nucenergy all pair exnusome
+compute wrapenergy all pair morse
+thermo 5000
+thermo_style   custom   step  temp  epair  c_nucenergy c_wrapenergy
+### Change the temperature computation so it is aware of ellipsoids
+### and switch off normalisation so that energies are the totals, not energy per atom
+thermo_modify temp t1 norm no 
+############################################################################
 
+run ${nrelax}
 
+###
+# Step where twisting stiffness is reduced, ran with FENE potentials for a few 1000 steps and then ran again at normal value
 
+angle_coeff 2 polytorsion 70.0 5 
 
+run ${nrelax}
+
+angle_coeff 2 polytorsion 70.0 44.12
+
+run ${nrelax}
+
+###
+# Switch off the indenters switch on wrapping run for a few 10000s steps
+
+unfix myIndenter1
+unfix myIndenter2
+
+include scripts/lammps/wrap.lammps
+
+run ${nwrap}
+
+###
+# Turn on stacking, run for a while more
+
+include scripts/lammps/stack.lammps
+
+run ${nstack}
+
+write_data init_configs/untangled/${out}.init nocoeff
