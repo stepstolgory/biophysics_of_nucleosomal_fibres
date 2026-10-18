@@ -8,6 +8,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
 from data_loader import load_dump_timestep
 
@@ -60,7 +61,14 @@ def store_data_to_csv(
 
 
 if __name__ == "__main__":
-    filepath = "/home/smikoyan/projects/mphys/initial_tests/dump_main.nucleosomes"
+    parser = argparse.ArgumentParser(
+        "calculate_rg", usage="python calculate_rg.py filepath [-o savepath]"
+    )
+    parser.add_argument("filepath", type=str, help="Path to dump file")
+    parser.add_argument(
+        "-o", "--out", type=str, default=None, help="Save output file here"
+    )
+    args = parser.parse_args()
     needed_cols = ["x", "y", "z", "ix", "iy", "iz"]
     # Iterate over chunks
     rg_sq_all = []
@@ -74,7 +82,7 @@ if __name__ == "__main__":
     #     )
     # )
 
-    for chunk_params, chunk_data in load_dump_timestep(filepath, needed_cols):
+    for chunk_params, chunk_data in load_dump_timestep(args.filepath, needed_cols):
         rg_sq_all.append(
             calculate_radius_of_gyration(
                 chunk_params["n_atoms"],
@@ -94,9 +102,15 @@ if __name__ == "__main__":
         )
 
         timesteps.append(chunk_params["timestep"])
-
+    save_path_rg = "data_files/rg.dat" if args.out is None else args.out
+    save_path_ee = "data_files/ee.dat" if args.out is None else args.out
     store_data_to_csv(
-        np.vstack((timesteps, rg_sq_all, e_e_distance_all)).T,
-        "data_files/rg_ee.dat",
-        ["#", "timestep", "R_g", "e_e_distance"],
+        np.vstack((timesteps, rg_sq_all)).T,
+        save_path_rg,
+        ["#", "timestep", "R_g"],
+    )
+    store_data_to_csv(
+        np.vstack((timesteps, e_e_distance_all)).T,
+        save_path_ee,
+        ["#", "timestep", "e_e_distance"],
     )
