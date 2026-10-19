@@ -7,10 +7,8 @@ Make sure to push changes to the repository after finishing a session.
 # Initial setup
 Make sure to enter a supported python environment
 ``` console
-conda activate daml
+conda activate mphy
 ```
-> [!NOTE]
-> The `daml` environment was designed for the Data Analysis and Machine Learning in Physics course, so likely has many unnecessary libraries. Creating a dedicated environment is on the TODO list.
 
 Build the initial condition builder (once on each machine, it is not kept in git)
 ``` console

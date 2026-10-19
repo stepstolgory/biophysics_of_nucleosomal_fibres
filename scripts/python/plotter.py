@@ -4,11 +4,11 @@ import argparse
 from pathlib import Path
 import os
 from matplotlib import font_manager
+from mphys.paths import STYLE, FONTS, FIGURES
 
-STYLE_DIR = Path(__file__).parent / "style"
-for f in (STYLE_DIR / "fonts").glob("*.ttf"):
+for f in FONTS.glob("*.ttf"):
     font_manager.fontManager.addfont(str(f))
-plt.style.use(STYLE_DIR / "atlas.mplstyle")
+plt.style.use(str(STYLE / "atlas.mplstyle"))
 
 
 def _out_name(kind, args):
@@ -32,7 +32,7 @@ def _finish(fig, file_name, default_name: str, show: bool) -> None:
         return
 
     if file_name is None:
-        file_name = Path("figures") / default_name
+        file_name = FIGURES / default_name
     Path(file_name).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(file_name)
     plt.close(fig)
@@ -192,14 +192,14 @@ def main():
 
     if "ee" in args.p:
         plot_ee_over_time(
-            data[:, 0], data[:, 2], file_name=_out_name("ee", args), show=args.show
+            data[:, 0], data[:, 1], file_name=_out_name("ee", args), show=args.show
         )
 
     if "rgh" in args.p:
         plot_rg_histogram(data[:, 1], file_name=_out_name("rgh", args), show=args.show)
 
     if "eeh" in args.p:
-        plot_ee_histogram(data[:, 2], file_name=_out_name("eeh", args), show=args.show)
+        plot_ee_histogram(data[:, 1], file_name=_out_name("eeh", args), show=args.show)
 
     if args.show:
         plt.show()
