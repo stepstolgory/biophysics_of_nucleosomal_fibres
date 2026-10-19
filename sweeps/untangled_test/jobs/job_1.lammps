@@ -1,0 +1,13 @@
+
+variable E            string 9.0
+
+variable I            string 0.3
+
+variable wrapEuniform string 10.0
+
+variable rep          string 1
+
+variable start        string init_configs/untangled/init_config_1.init
+
+variable run_dir      string sweeps/untangled_test/runs/E9.0_I0.3_W10.0_r1
+
