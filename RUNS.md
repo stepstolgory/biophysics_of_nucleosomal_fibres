@@ -345,7 +345,7 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/setup.lammps -var id 3 -var nwrap 100000
 
 **Next:** Will need to discuss with Chris so for now move on to implementing the untangling (since maybe this will solve itself after)
 
-#### T15: Testing the unwrapping
+#### T15: Testing the untangling
 
 **Aim:** Perform a full run from setup to main simulation but include the untangling step
 

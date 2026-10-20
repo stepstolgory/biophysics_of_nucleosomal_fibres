@@ -33,7 +33,7 @@ print "Job ${job}: E = ${E}, I = ${I}, wrapEuniform = ${wrapEuniform}, rep ${rep
 
 units lj
 atom_style hybrid angle ellipsoid
-boundary p p p
+boundary s s s 
 
 neighbor 1.9 bin
 neigh_modify every 1 delay 1 check yes
