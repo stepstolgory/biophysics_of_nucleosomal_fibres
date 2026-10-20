@@ -88,7 +88,7 @@ angle_coeff   2 polytorsion 70.0 44.12
 angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 
 #TODO: Check with Chris
-# Have to set up a bond style but not sure what to pick between `none` and `zero`
+# Keep them as FENE, if that doesn't work then harmonic is fine
 
 bond_style harmonic 
 bond_coeff 1 1000.0 0.7
