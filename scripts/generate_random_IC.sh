@@ -3,6 +3,8 @@
 #   N     make starting structures 1 to N (ones that already exist are kept)
 #   NNUC  number of nucleosomes (default 20)
 # The seed used for each structure is logged in initial_positions/ic_seeds.txt.
+# If a fibre does not fit in the box of -50 to 50 that generate_ic writes, scripts/fit_box.sh
+# widens the box lines of its file (atom positions are not changed).
 # Run from the repo root.
 
 N=$1
@@ -39,6 +41,8 @@ for ((id = 1; id <= N; id++)); do
     >initial_positions/generate_ic_${id}.log 2>&1; then
     echo "$id $SEED" >>initial_positions/ic_seeds.txt
     echo "made $out (seed $SEED)"
+    # generate_ic always writes a box of -50 to 50, and boundary s s s needs every atom inside it
+    scripts/fit_box.sh -q "$out"
   else
     echo "Error: generate_ic failed for id $id, see initial_positions/generate_ic_${id}.log" >&2
   fi

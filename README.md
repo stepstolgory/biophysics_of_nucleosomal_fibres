@@ -36,6 +36,11 @@ scripts/generate_random_thermal_seeds.sh 10 # seed files 1 to 10
 ```
 Both keep files that already exist, so they can be run again with a bigger number to add more.
 
+`generate_ic` always writes a box of -50 to 50, but many fibres grow past that. With `boundary s s s` LAMMPS throws away every atom outside the box in the data file and stops with `Did not assign all atoms correctly`. So `generate_random_IC.sh` runs `scripts/fit_box.sh`, which widens the box lines of a file when atoms are outside (atom positions are never changed). To check or fix structures made another way:
+``` console
+scripts/fit_box.sh initial_positions/data_*.lammps
+```
+
 # Run LAMMPS sim
 > [!NOTE]
 > For the runs that have been done so far, refer to the `RUNS.md` file.

@@ -191,6 +191,15 @@ Delete the copies and run again to make new ones"
   [[ $(echo "$sizes" | wc -l) -eq 1 ]] || fail "the starting structures do not all have the same number of atoms: $(echo "$sizes" | tr '\n' ' ')"
   say "$NIDS starting structures, all different, $sizes atoms each"
 
+  # With boundary s s s, LAMMPS drops every atom that is outside the box in the data file header
+  # and stops with "Did not assign all atoms correctly". generate_ic writes a box of -50 to 50,
+  # which most fibres outgrow. This only edits the box lines of a file, and only if needed.
+  fitted=$(scripts/fit_box.sh -q "${data_files[@]}")
+  fit_rc=$?
+  [[ -n $fitted ]] && echo "$fitted"
+  ((fit_rc == 0)) || fail "scripts/fit_box.sh could not fix the box of a starting structure (see above)"
+  [[ -n $fitted ]] && echo "Only the box lines of the files above changed, not the atom positions. Commit them so the repository matches what was run."
+
   ###############################################
   # Set-up, then untangle, one single-core process per id
   ###############################################
