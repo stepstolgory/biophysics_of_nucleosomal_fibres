@@ -391,3 +391,24 @@ The id = 1 and job = 1 variables should all automatically take in the correct fi
 **Result:** After many bug fixes from LAMMPS all three stages run from start to finish and produce a plausible looking movie. Whether the actual physics is correct remains to be seen and I need to ask Chris about that. 
 
 **Next:** Dump more frequently in the untangle file since I only run some of the steps for 5k time steps 
+
+
+#### T16: Testing the untangling with a shrink wrapped box
+
+**Aim:**  See if switching to the shrink wrapped box has fixed the issue with end atoms attracting over bx boundaries (shortest distance) instead of direct.
+
+**Setup:**
+  - Updated `scripts/lammps/untangle.lammps` script with the box
+  - Default parameters, runtimes, id = 1
+  - Git commit: `1877757`. Branch: `untangle`
+
+**Commands:** 
+```bash
+nohup LAMMPS/lmp_mpi -in scripts/lammps/untangle.lammps -var id 1 -screen none > /dev/null 2>&1 &
+```
+> [!NOTE]
+> Using the initial configuration relaxed using the periodic box so I would need to redo it later on.
+
+**Results:** The two ends now attract to normal positions, but I think I will move the indents to the corners instead. Additionally, placing the indents outside of the box seems to work completely fine and not throw any errors.
+
+**Next:** Move the indents to the corners of the box. 
