@@ -12,11 +12,15 @@ plt.style.use(str(STYLE / "atlas.mplstyle"))
 
 
 def _out_name(kind, args):
-    if args.o is None or len(args.p) == 1:
-        return args.o
+    if args.o is None:
+        base = FIGURES / f"{Path(args.filepath).stem}.png"
+    else:
+        base = Path(args.o)
 
-    stem, ext = os.path.splitext(args.o)
-    return f"{stem}_{kind}{ext}"
+    if len(args.p) == 1:
+        return base
+
+    return base.with_name(f"{base.stem}_{kind}{base.suffix}")
 
 
 def _stats_text(symbol: str, data: np.ndarray) -> str:
