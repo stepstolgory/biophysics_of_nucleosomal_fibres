@@ -10,11 +10,11 @@ variable E index 9.0
 variable I index 0.3
 variable wrapEuniform index 10.0
 
-variable nsoft  index 50000
-variable nrelax index 250000
-variable nwrap  index 500000
-variable nstack index 1500000
-variable ntwist index 5000
+variable nsoft  index 50_000
+variable nrelax index 250_000
+variable nwrap  index 1_000_000
+variable nstack index 1_500_000
+variable ntwist index 5_000
 
 include seeds/seed_${id}.lammps
 
@@ -122,18 +122,19 @@ timestep 0.005
 
 neigh_modify exclude group all all # this switches off all interactions though I technically never enabled any
 
-fix myIndenter1 startBead indent 1.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 1.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 1.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 1.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
 run ${nuntangle}
 #Increase energy gradually
-fix myIndenter1 startBead indent 10.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 10.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 10.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 10.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+
 
 run ${nuntangle}
 
-fix myIndenter1 startBead indent 100.0 sphere 0.0 0.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 100.0 sphere 0.0 0.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 100.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 100.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
 run 10000
 
