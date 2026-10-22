@@ -40,8 +40,8 @@
 # notes. Check them against the phase diagram before a real run.
 
 SWEEP=${SWEEP:-sweep01}
-E_LIST=${E_LIST:-"2.0 4.0 6.0 8.0 10.0"}
-I_LIST=${I_LIST:-"0.3"}
+E_LIST=${E_LIST:-"2.0 4.0 6.0 8.0 10.0 12.0 14.0"}
+I_LIST=${I_LIST:-"0.2 0.6 1"}
 W_LIST=${W_LIST:-"10.0"}
 REPS=${REPS:-5}
 NIDS=${NIDS:-10}

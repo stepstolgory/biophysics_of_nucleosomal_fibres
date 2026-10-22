@@ -13,7 +13,7 @@ variable wrapEuniform index 10.0
 variable nsoft  index 50_000
 variable nrelax index 250_000
 variable nwrap  index 1_000_000
-variable nstack index 1_500_000
+variable nstack index 1_000_000
 variable ntwist index 5_000
 
 include seeds/seed_${id}.lammps
