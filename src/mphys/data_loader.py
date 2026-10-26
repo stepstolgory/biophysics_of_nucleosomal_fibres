@@ -36,13 +36,20 @@ def load_dump_timestep(filepath: Path, cols: list | None = None, skip: int = 0):
     Yields a tuple of (chunk_params, data) for each timestep, where
     chunk_params is a dict of metadata and data is a 2D array of shape
     (n_atoms, n_selected_columns).
+
+    filepath : str
+        Path to dump file
+    cols : list | None = None
+        Columns to read from dump file by name
+    skip : int = 0
+        Skip `skip` number of frames in the file
     """
     TIMESTEP_LINE_START = "ITEM: TIMESTEP"
 
     with open(filepath, "r") as dump_file:
         # Use a generator function to iterate per timestep chunk
         for i, chunk in enumerate(_chunk_generator(dump_file, TIMESTEP_LINE_START)):
-            if i < skip:
+            if i <= skip:
                 continue
             # Drop "ITEM:" and "ATOMS" to leave only the column headings
             atom_headings = chunk[8].split()[2:]
