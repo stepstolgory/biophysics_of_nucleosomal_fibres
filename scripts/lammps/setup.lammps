@@ -16,10 +16,10 @@ variable dump_out index dump_initial_${id}
 log init_configs/log_initial_${id}.out
 
 # Steps in each set-up stage (change with -var, e.g. -var nstack 600000)
-variable nsoft  index 50_000
-variable nrelax index 250_000
-variable nwrap  index 1_000_000
-variable nstack index 150_000
+variable nsoft  index $(5e4)
+variable nrelax index $(2.5e5)
+variable nwrap  index $(1e6)
+variable nstack index $(1.5e5)
 
 ### Set the main parameters
 # Find out what the variables actually represent

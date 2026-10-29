@@ -13,7 +13,7 @@
 ###############################################
 
 include ${sweep}/sweep.lammps     # sets njobs
-variable nsteps index 15_000_000    # length of the production run
+variable nsteps index $(1.5e7)
 variable job uloop ${njobs}       # skipped if job was given with -var
 
 label next_job
