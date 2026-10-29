@@ -13,7 +13,7 @@ variable wrapEuniform index 10.0
 
 variable nsoft  index $(5e4)
 variable nrelax index $(2.5e5)
-variable nwrap  index $(5e6)
+variable nwrap  index $(1e6)
 variable nstack index $(5e6)
 variable ntwist index $(1e4)
 
@@ -88,8 +88,6 @@ angle_coeff   1 cosine 29.41  # gives persistence length of 50nm for 5 bp beads
 angle_coeff   2 polytorsion 70.0 44.12
 angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 
-#TODO: Check with Chris
-# Keep them as FENE, if that doesn't work then harmonic is fine
 
 bond_style harmonic 
 bond_coeff 1 1000.0 0.7
@@ -169,21 +167,35 @@ angle_coeff 2 polytorsion 70.0 44.12
 
 run ${ntwist}
 
-###
-# Switch off the indenters switch on wrapping run for a few 10000s steps
-
-unfix myIndenter1
-unfix myIndenter2
+# Don't switch off the indenters, instead gradually move them closer together
 
 include scripts/lammps/wrap.lammps
 
 run ${nwrap}
+
+fix myIndenter1 startBead indent 90.0 sphere -39.0 -39.0 -39.0 1.0 side in # sphere at z = -39.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 90.0 sphere 39.0 39.0 39.0 1.0 side in # sphere at z = 39.0 which is pulling in the end bead at a small start energy of 1.0
+
+run ${nwrap}
+
+fix myIndenter1 startBead indent 80.0 sphere -25.0 -25.0 -25.0 1.0 side in # sphere at z = -25.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 80.0 sphere 25.0 25.0 25.0 1.0 side in # sphere at z = 25.0 which is pulling in the end bead at a small start energy of 1.0
+
+run ${nwrap}
+run ${nwrap}
+run ${nwrap}
+# 5e6 
 
 ###
 # Turn on stacking, run for a while more
 
 include scripts/lammps/stack.lammps
 
-run ${nstack}
+run ${nstack} # Run some of the stacking steps with the indenters still on
+
+# Turn off indenters 
+unfix myIndenter1
+unfix myIndenter2
+
 
 write_data init_configs/untangled/${out}.init nocoeff
