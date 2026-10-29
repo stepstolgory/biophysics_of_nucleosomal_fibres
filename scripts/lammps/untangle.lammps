@@ -3,7 +3,7 @@ variable out index init_config_${id}
 variable dump_out index dump_initial_${id}
 log init_configs/logs/log_untangle_${id}.out
 
-variable nuntangle index 5000 #This is a placeholder number for now
+variable nuntangle index $(1e4) #This is a placeholder number for now
 
 
 variable E index 9.0
@@ -12,8 +12,8 @@ variable wrapEuniform index 10.0
 
 variable nsoft  index $(5e4)
 variable nrelax index $(2.5e5)
-variable nwrap  index $(1e6)
-variable nstack index $(1e6)
+variable nwrap  index $(5e6)
+variable nstack index $(5e6)
 variable ntwist index $(1e4)
 
 include seeds/seed_${id}.lammps
@@ -90,9 +90,10 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 #TODO: Check with Chris
 # Keep them as FENE, if that doesn't work then harmonic is fine
 
-bond_style harmonic 
-bond_coeff 1 1000.0 0.7
-comm_modify cutoff 5
+bond_style   fene
+special_bonds fene #<=== I M P O R T A N T (new command)
+bond_coeff   1   64.88   1.28   1.0   0.68
+#comm_modify cutoff 5
 
 ###
 # Set up fixes. Things that happen at every timestep
