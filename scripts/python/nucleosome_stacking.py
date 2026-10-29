@@ -26,7 +26,7 @@ def reconstruct_nucleosomes(data: np.ndarray):
     for i, atom in enumerate(data):
         if (
             atom.size != 12
-        ):  # Change this to 9 once I remove ix, iy, iz from dump command and run new sweep
+        ):  # FIXME: Change this to 9 once I remove ix, iy, iz from dump command and run new sweep
             raise IndexError(
                 f"Atom with ID {i} does not have the expected number of columns. Expected 9, got {atom.size}."
             )
@@ -147,18 +147,14 @@ def main():
     u_list = []
     frames = []
 
-    for chunk_params, chunk_data in load_dump_timestep(
-        args.filepath,
-    ):
+    for chunk_params, chunk_data in load_dump_timestep(args.filepath, skip=1499):
         nucs: list[Nucleosome] = reconstruct_nucleosomes(chunk_data)
         frames.append(nucs)
         times.append(chunk_params["timestep"])
         pos_list.append([nuc.pos for nuc in nucs])
         u_list.append([nuc.u for nuc in nucs])
 
-    _, fraction, _, _, _ = find_stackings(
-        times, pos_list, u_list, frames, verbose=False
-    )
+    _, fraction, _, _, _ = find_stackings(times, pos_list, u_list, frames, verbose=True)
     print(np.mean(fraction))
 
 
