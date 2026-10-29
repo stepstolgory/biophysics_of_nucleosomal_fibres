@@ -1,0 +1,3 @@
+
+# and between nucleosomes so they stack
+pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}

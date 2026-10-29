@@ -11,7 +11,7 @@ LAMMPS Description
 
 -50 50 xlo xhi
 -50 50 ylo yhi
--50 50 zlo zhi
+-50 77 zlo zhi
 Masses
 
 1 1.0

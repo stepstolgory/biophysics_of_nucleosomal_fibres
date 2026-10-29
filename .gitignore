@@ -236,3 +236,4 @@ initial_condition_builder/generate_ic
 # Symlink to data for vmd
 test_dumps
 
+sweeps/*/runs

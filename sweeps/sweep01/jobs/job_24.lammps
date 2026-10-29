@@ -1,0 +1,6 @@
+variable E            string 12.0
+variable I            string 0.6
+variable wrapEuniform string 10.0
+variable rep          string 2
+variable start        string init_configs/untangled/init_config_2.init
+variable run_dir      string sweeps/sweep01/runs/E12.0_I0.6_W10.0_r2
