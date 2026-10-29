@@ -1,7 +1,8 @@
 variable id uloop 10
 variable out index init_config_${id}
 variable dump_out index dump_initial_${id}
-log init_configs/logs/log_untangle_${id}.out
+variable log_out index init_configs/logs/log_untangle_${id}
+log ${log_out}.out
 
 variable nuntangle index $(1e4) #This is a placeholder number for now
 
