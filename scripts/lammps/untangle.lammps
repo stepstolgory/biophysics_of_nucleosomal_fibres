@@ -93,7 +93,7 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 bond_style   fene
 special_bonds fene #<=== I M P O R T A N T (new command)
 bond_coeff   1   64.88   1.28   1.0   0.68
-#comm_modify cutoff 5
+comm_modify cutoff 5
 
 ###
 # Set up fixes. Things that happen at every timestep
