@@ -125,24 +125,6 @@ angle_coeff   3 polytorsion 70.0 0.0  ### Fixed, not using polytorsionend
 # pair and bond interactions - start with 'soft' potentials
 ###
 
-## Between bonded atoms
-# bond_style   harmonic # harmonic uses potential E = K(r-r_0)^2
-# # For style harmonic, specify:
-# #   * bond type
-# #   * K (energy/distance^2) 
-# #   * R0 (distance)
-# bond_coeff   1   1000.0   0.7
-#
-# ## Between non-bonded atoms
-# pair_style soft 1.12246152962189 # soft computes pairwise interactions with the formula E = A[1 + cos(pi*r/r_c)] for r < r_c
-# pair_coeff 1*3 1*3  100.0 1.12246152962189 
-# pair_coeff 4 4  100.0 1.53242039900875 # these have diameter 1.365232
-# pair_coeff 1*3 4  100.0 1.32744096431532 # diameter 0.5*(1+1.365232)
-# pair_coeff 1*3 5*22 0.0 1.12246152962189
-# pair_coeff 4 5*22 100.0 1.32744096431532 # diameter 0.5*(1+1.365232)
-# pair_coeff 5*22 5*22 100.0 1.12246152962189 
-#
-# pair_coeff 1*23 23 100.0 1.12246152962189 # diameter 1
 
 include scripts/lammps/soft.lammps
 
@@ -175,42 +157,6 @@ run ${nsoft}
 # Now switch to LJ potential and FENE bonds
 
 
-###########################################
-# Pair interaction between bonded atoms
-# bond_style   fene
-# special_bonds fene #<=== I M P O R T A N T (new command)
-# bond_coeff   1   64.88   1.28   1.0   0.68
-
-
-
-# ###########################################
-# # Pair interaction between non-bonded atoms
-# pair_style      hybrid lj/cut 1.12246152962189 morse 1.12246152962189 exnusome 6.0
-# pair_modify     shift yes
-# pair_coeff      1*3 1*3 lj/cut 1.0 1.0 1.12246152962189
-# pair_coeff      4 4 lj/cut 1.0 1.365232 1.53242039900875 # these have diameter 1.365232
-# pair_coeff      1*3 4 lj/cut 1.0 1.182616 1.32744096431532 # diameter 0.5*(1+1.365232)
-# pair_coeff      1*3 5*22 lj/cut 1.0 1.0 1.12246152962189
-# pair_coeff      1 5*22 morse 0.0 1.75 0.0 0.9 # Morse use for the sticky patches
-# # patches need to exclude each other, to stop one DNA bead from interacting with
-# # multiple patches
-# pair_coeff      5*22 5*22 lj/cut 1.0 1.0 1.12246152962189
-# # will be turning these off, but still need to specify 
-# pair_coeff      4 5*22 lj/cut 0.0 1.0 1.12246152962189
-#
-# pair_coeff 1*22 23 lj/cut 1.0 1.0 1.12246152962189 # type 23 looks like a size 1 to everything
-#
-# # add internucleosome interaction -- but attraction set to zero to start with
-# #pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
-# pair_coeff 23 23 exnusome 0.0 0.0 0.0 0.0 0.0 ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
-#
-# neigh_modify exclude none
-# # no interactions between atoms in same rigid body
-# neigh_modify exclude molecule/intra nuc
-# # no interactions between big core and patches
-# neigh_modify exclude group bigcore patches
-#
-
 include scripts/lammps/relax.lammps
 
 ##### Output thermodynamic info  (temperature, energy, pressure, etc.) #####
@@ -231,13 +177,9 @@ run ${nrelax}
 ## Add attractions
 ######
 
-# # switch on attraction between proteins and DNA so they wrap up
-# pair_coeff      1 5*22 morse ${wrapEuniform} 10.0 0.0 0.7
 include scripts/lammps/wrap.lammps
 run ${nwrap}
 
-# # and between nucleosomes so they stack
-# pair_coeff 23 23 exnusome ${nucE_a} ${nucE_b} ${nucE_c} ${nucE_d} ${nucE_e} ${nucA_a} ${nucR_a} ${nucR_b} ${nucR_c} ${nucR_d}
 include scripts/lammps/stack.lammps
 run ${nstack}
 
