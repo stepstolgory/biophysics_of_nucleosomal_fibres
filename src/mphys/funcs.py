@@ -35,6 +35,14 @@ def store_data_to_csv(
         writer.writerows(data)
 
 
+def read_table(path: Path) -> np.ndarray:
+    """
+    Returns columns names and data from a space separated file as a 2D array.
+    """
+    data = np.loadtxt(path, ndmin=2)
+    return data
+
+
 def quat2uaxis(q: np.ndarray):
     """Return the unit vector corresponding to the z-axis of the bead"""
     p = np.array([0.0, 0.0, 0.0], dtype=np.float64)
