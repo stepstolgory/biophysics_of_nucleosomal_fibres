@@ -14,3 +14,9 @@ FF_INTERACTION_RANGE = (
 FF_ANGLE_THRESHOLD = (
     pi / 4
 )  # FIXME: Add the real thershold. Ask Chris for the actual value.
+
+QUANTITIES = {
+    "rg": dict(symbol=r"R_g", unit=r"\sigma_{LJ}"),
+    "ee": dict(symbol=r"R_{ee}", unit=r"\sigma_{LJ}"),
+    "fraction": dict(symbol=r"f_{\mathrm{stack}}", unit=None, ylim=(0, 1)),
+}
