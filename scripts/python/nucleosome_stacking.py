@@ -1,15 +1,21 @@
 """This file is responsible for calculating the stacking fraction of nucleosomes over the simulation time"""
 
 import argparse
+from pathlib import Path
+
 import numpy as np
-from mphys.data_loader import load_dump_timestep
-from mphys.nucleosome import Nucleosome
+
 from mphys.constants import (
     ATOMS_PER_NUC,
-    TYPE_2_ATOM_NUC,
-    FF_INTERACTION_RANGE,
     FF_ANGLE_THRESHOLD,
+    FF_INTERACTION_RANGE,
+    TYPE_2_ATOM_NUC,
 )
+from mphys.data_loader import load_dump_timestep
+from mphys.funcs import partner_gaps, store_data_to_csv
+from mphys.nucleosome import Nucleosome
+
+MAX_GAP = 4
 
 
 def reconstruct_nucleosomes(data: np.ndarray):
@@ -136,6 +142,96 @@ def find_stackings(
     return stacked, fraction, occ, I_IDX, J_IDX
 
 
+def partner_table(frames: list[list[Nucleosome]]) -> np.ndarray:
+    """
+    Partner on each face of each nucleosome, for every frame.
+        frames : list[list[Nucleosome]] - Nucleosomes of every frame, after find_stackings
+
+    Returns: numpy.ndarray of shape (F, 2N). Column 2i is nucleosome i's plus face,
+             column 2i + 1 its minus face. -1 marks a free face.
+
+        Note: "partner or -1" would turn partner 0 into -1, so None is tested for directly.
+    """
+    F, N = len(frames), len(frames[0])
+    partners = np.full((F, 2 * N), -1, dtype=int)
+    for f, nucs in enumerate(frames):
+        for nuc in nucs:
+            if nuc.plus_partner is not None:
+                partners[f, 2 * nuc.id] = nuc.plus_partner
+            if nuc.minus_partner is not None:
+                partners[f, 2 * nuc.id + 1] = nuc.minus_partner
+    return partners
+
+
+def stacking_columns(partners: np.ndarray) -> tuple[list[str], np.ndarray]:
+    """
+    Stacked fraction, split by how far along the chain the partner is.
+        partners : numpy.ndarray - Partner table of shape (F, 2N), from partner_table
+
+    Returns: Column names and values of shape (F, MAX_GAP + 1):
+             fraction, then gap1 ... gap<MAX_GAP - 1>, then gap<MAX_GAP>plus.
+             Each is a number of faces divided by 2N, so the gap columns add up to fraction.
+    """
+    gaps = partner_gaps(partners)
+    n_faces = partners.shape[1]  # 2N
+
+    names = ["fraction"]
+    columns = [(partners >= 0).sum(axis=1) / n_faces]
+    for gap in range(1, MAX_GAP):
+        names.append(f"gap{gap}")
+        columns.append((gaps == gap).sum(axis=1) / n_faces)
+    names.append(f"gap{MAX_GAP}plus")
+    columns.append((gaps >= MAX_GAP).sum(axis=1) / n_faces)
+
+    return names, np.column_stack(columns)
+
+
+def write_outputs(
+    prefix: Path,
+    times: list,
+    partners: np.ndarray,
+    r_cut: float,
+    angle_cut: float,
+    source: str,
+) -> None:
+    """
+    Write <prefix>_faces.dat (partner on every face) and <prefix>_stacking.dat
+    (stacked fraction and its split by gap), one row per frame.
+        prefix : Path - Output path without the ending, e.g. data_files/sweep04/E8.0_I0.2_W10.0_r1
+        times : list - Timestep of each frame
+        partners : numpy.ndarray - Partner table of shape (F, 2N)
+        r_cut : float - Distance cut-off used, in sigma_LJ
+        angle_cut : float - Angle cut-off used, in radians
+        source : str - Dump file the stackings were found in
+    """
+    prefix.parent.mkdir(parents=True, exist_ok=True)
+    times = np.asarray(times, dtype=int)
+    N = partners.shape[1] // 2
+
+    comments = [
+        f"source: {source}",
+        f"N = {N}, r_cut = {r_cut:g} sigma_LJ, angle_cut = {angle_cut:g} rad",
+    ]
+
+    # Partner on every face: n0_plus n0_minus n1_plus n1_minus ...
+    face_names = [f"n{i}_{face}" for i in range(N) for face in ("plus", "minus")]
+    store_data_to_csv(
+        np.column_stack((times, partners)),
+        f"{prefix}_faces.dat",
+        ["#", "timestep", *face_names],
+        comments=comments + ["partner index on each face, -1 if free"],
+    )
+
+    # Stacked fraction and its split by gap along the chain
+    names, values = stacking_columns(partners)
+    store_data_to_csv(
+        [[t, *(f"{v:.6g}" for v in row)] for t, row in zip(times, values)],
+        f"{prefix}_stacking.dat",
+        ["#", "timestep", *names],
+        comments=comments + ["stacked faces / 2N, in total and by gap along the chain"],
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -149,6 +245,14 @@ def main():
         action="store_true",
         default=False,
         help="Print out what stackings have been found.",
+    )
+    parser.add_argument(
+        "-o",
+        "--out",
+        type=str,
+        default=None,
+        help="Output prefix, e.g. data_files/sweep04/E8.0_I0.2_W10.0_r1 "
+        "Writes <prefix>_faces.dat and <prefix>_stacking.dat",
     )
     args = parser.parse_args()
 
@@ -168,6 +272,18 @@ def main():
         times, pos_list, u_list, frames, verbose=args.verbose
     )
     print(f"Mean stacking fraction: {np.mean(fraction)}")
+
+    if args.out is not None:
+        partners = partner_table(frames)
+        write_outputs(
+            Path(args.out),
+            times,
+            partners,
+            FF_INTERACTION_RANGE,
+            FF_ANGLE_THRESHOLD,
+            args.filepath,
+        )
+        print(f"Saved {args.out}_faces.dat and {args.out}_stacking.dat")
 
 
 if __name__ == "__main__":

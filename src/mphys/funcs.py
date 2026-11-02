@@ -27,17 +27,23 @@ def unwrap_coords(data: np.ndarray, dims: np.ndarray, titles: list) -> np.ndarra
 
 
 def store_data_to_csv(
-    data: np.ndarray | list, save_path: Path | str, header: np.ndarray | list
+    data: np.ndarray | list,
+    save_path: Path | str,
+    header: np.ndarray | list,
+    comments: list[str] | None = None,
 ) -> None:
     """
     Saves data to a file separated by a space character with custom header.
         data : numpy.ndarray | list - Data to write
         save_path : Path | str - Path to write to
         header : np.ndarray | list - File header
+        comments : list[str] | None - Extra lines written above the header, each starting with '#'
 
         Note: Lines starting with '#' are automatically considered comments
     """
     with open(save_path, "w", newline="") as f:
+        for line in comments or []:
+            f.write(f"# {line}\n")
         writer = csv.writer(f, delimiter=" ", lineterminator="\n")
         writer.writerow(header)
         writer.writerows(data)

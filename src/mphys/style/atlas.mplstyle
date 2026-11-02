@@ -32,6 +32,6 @@ yaxis.labellocation : top
 # Write hex colours WITHOUT the hash: in this file a hash starts a comment.
 axes.prop_cycle : cycler('color', ['0066cc', 'e00000', '2ca02c', 'ff7f0e', '9467bd', '8c564b', 'e377c2', '7f7f7f', 'bcbd22', '17becf'])
 figure.figsize : 6, 4.2
-font.size      : 16
+font.size      : 14
 savefig.dpi    : 300
 savefig.bbox   : tight

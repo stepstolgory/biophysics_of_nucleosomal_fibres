@@ -1,10 +1,11 @@
 import warnings
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
 
-from mphys.paths import FONTS, STYLE
+from mphys.paths import DATA, FIGURES, FONTS, STYLE
 
 QUANTITIES = {
     "rg": dict(symbol=r"$R_g$", unit=r"$\sigma_{LJ}$"),
@@ -123,5 +124,36 @@ def histogram(
     ax.set_xlabel(label(name))
     ax.set_ylabel("Probability density")
 
+    xlim = _entry(name).get("ylim")
+    if xlim is not None:
+        ax.set_xlim(xlim)
     ax.legend()
     return ax
+
+
+def savefig(fig: plt.Figure, path: Path | str) -> None:
+    """
+    Saves a figure, making its folder first if needed, then closes it.
+        fig : plt.Figure - Figure to save
+        path : Path | str - Where to save it. The extension sets the format (.png, .pdf, ...)
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path)
+    plt.close(fig)
+
+
+def default_out(input_path: Path | str, plot_kind: str) -> Path:
+    """
+    Default output path for a plot made from a data file.
+        input_path : Path | str - Data file the plot is made from
+        plot_kind : str - Kind of plot, added to the name (e.g. "ts", "hist", "kymo")
+
+    Returns: figures/<same sub-folder>/<input stem>_<plot_kind>.png if the input is inside
+             data_files/, otherwise the same name next to the input
+    """
+    input_path = Path(input_path).resolve()
+    name = f"{input_path.stem}_{plot_kind}.png"
+    if input_path.is_relative_to(DATA):
+        return FIGURES / input_path.parent.relative_to(DATA) / name
+    return input_path.parent / name
