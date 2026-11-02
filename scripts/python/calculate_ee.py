@@ -57,5 +57,5 @@ if __name__ == "__main__":
     store_data_to_csv(
         np.vstack((timesteps, e_e_distance_all)).T,
         save_path_ee,
-        ["#", "timestep", "e_e_distance"],
+        ["#", "timestep", "ee"],
     )

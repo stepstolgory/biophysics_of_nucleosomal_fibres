@@ -53,5 +53,5 @@ if __name__ == "__main__":
     store_data_to_csv(
         np.vstack((timesteps, rg_sq_all)).T,
         save_path_rg,
-        ["#", "timestep", "R_g"],
+        ["#", "timestep", "rg"],
     )
