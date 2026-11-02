@@ -1,42 +1,47 @@
-import argparse
-import os
 import warnings
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
 
-from mphys.constants import QUANTITIES
-from mphys.paths import FIGURES, FONTS, STYLE
+from mphys.paths import FONTS, STYLE
 
 QUANTITIES = {
-    "rg": dict(symbol=r"R_g", unit=r"\sigma_{LJ}"),
-    "ee": dict(symbol=r"R_{ee}", unit=r"\sigma_{LJ}"),
-    "fraction": dict(symbol=r"f_{\mathrm{stack}}", unit=None, ylim=(0, 1)),
-    "E": dict(symbol=r"$E_{ff}$", unit=r"k_BT"),
-    "I": dict(symbol="I", unit=None, ylim=(0, 1)),
-    "W": dict(symbol="W", unit=r"k_BT"),
+    "rg": dict(symbol=r"$R_g$", unit=r"$\sigma_{LJ}$"),
+    "ee": dict(symbol=r"$R_{ee}$", unit=r"$\sigma_{LJ}$"),
+    "fraction": dict(symbol=r"$f_{\mathrm{stack}}$", unit=None, ylim=(0, 1)),
+    "E": dict(symbol=r"$E_{ff}$", unit=r"$k_BT$"),
+    "I": dict(symbol="I", unit=None),
 }
-TIMESCALE = 1e6
-TIME_LABEL = rf"Time steps ($10^{np.log10(1e6)}$)"
+TIME_SCALE = 1e6
+TIME_LABEL = rf"Time steps ($10^{int(np.log10(TIME_SCALE))}$)"
 
 
-def _use_style():
-    for f in FONTS.glob("*.ttf"):
-        font_manager.fontManager.addfont(str(f))
-    plt.style.use(str(STYLE / "atlas.mplstyle"))
+def _entry(name: str) -> dict:
+    """
+    Returns the QUANTITIES entry for a column name.
+        name : str - Column name from a data file
+
+    Returns: dict of the quantity's settings, or an empty dict if it has no entry
+    """
+    return QUANTITIES.get(name, {})
 
 
-def _stats_text(symbol: str, data: np.ndarray) -> str:
+def stats_text(symbol: str, data: np.ndarray) -> str:
     return (
-        rf"$\langle {symbol} \rangle = {data.mean():.2f} \pm {data.std() / np.sqrt(data.size):.1g}$"
+        rf"$\langle {symbol} \rangle = {data.mean():.2f}$"
         "\n"
         rf"$\sigma = {data.std():.2f}$"
     )
 
 
-def _label(name: str) -> str:
+def use_style():
+    for f in FONTS.glob("*.ttf"):
+        font_manager.fontManager.addfont(str(f))
+    plt.style.use(str(STYLE / "atlas.mplstyle"))
+
+
+def label(name: str) -> str:
     q = QUANTITIES.get(name, None)
     if q is not None:
         label = f"{q['symbol']} ({q['unit']})"
@@ -50,21 +55,25 @@ def timeseries(
     ax: plt.Axes,
     t: np.ndarray,
     y: np.ndarray,
-    q: str,
-    t_scale: int = 1e6,
+    name: str,
     n_bins: int = 50,
-):
+    raw: bool = True,
+    **kw,
+) -> plt.Axes:
     """Plot a variable over time
     ax (plt.Axes) : axes to plot on
     t (np.ndarray) : numpy array of times
     y (np.ndarray) : numpy array of data points
-    q (str) : name of quantity to plot
-    t_scale (int) : what to scale the time array by. Default 1e6
+    name (str) : name of quantity to plot
     n_bins (int) : number of bins for the mean line. Default 50
-    """
-    _use_style()
+    raw (bool) : plot gray points of raw data if True. Default True
+    **kw : passed on to ax.errorbar (e.g. color, alpha, label)
 
-    t = t / t_scale  # Scale the timesteps
+    Returns: the axes plotted on
+    """
+    n_bins = min(n_bins, len(t))  # No empty bins for short runs
+
+    t = t / TIME_SCALE  # Scale the timesteps
 
     t_bins = np.array_split(t, n_bins)
 
@@ -74,13 +83,45 @@ def timeseries(
     bin_mean = np.array([v.mean() for v in y_bins])
     bin_std = np.array([v.std() for v in y_bins])
 
-    ax.scatter(t, y, s=2, alpha=0.4, color="grey", label="data")
-    ax.error_bar(
-        bin_centres,
-        bin_mean,
-        yerr=bin_std,
-        fmt="o-",
-        markersize=3,
-        capsize=2,
-        label=r"binned mean $\pm 1\sigma$",
-    )
+    if raw:
+        ax.scatter(t, y, s=2, alpha=0.4, color="grey", label="data")
+
+    # Defaults for the mean line, anything in kw replaces them
+    kw.setdefault("fmt", "o-")
+    kw.setdefault("markersize", 3)
+    kw.setdefault("capsize", 2)
+    kw.setdefault("label", r"binned mean $\pm 1\sigma$")
+
+    ax.errorbar(bin_centres, bin_mean, yerr=bin_std, **kw)
+
+    ax.set_xlabel(TIME_LABEL)
+    ax.set_ylabel(label(name))
+
+    ylim = _entry(name).get("ylim")
+    if ylim is not None:
+        ax.set_ylim(ylim)
+
+    return ax
+
+
+def histogram(
+    ax: plt.Axes, y: np.ndarray, name: str, n_bins: int = 50, **kw
+) -> plt.Axes:
+    """Plot a histogram of a variable
+    ax (plt.Axes) : axes to plot on
+    y (np.ndarray) : numpy array of data points
+    name (str) : name of quantity to plot
+    n_bins (int) : number of bins for the histogram
+    **kw : passed on to ax.stairs
+
+    Returns: the axes plotted on
+    """
+    count, bins = np.histogram(y, n_bins, density=True)
+
+    ax.stairs(count, bins, **kw)
+
+    ax.set_xlabel(label(name))
+    ax.set_ylabel("Probability density")
+
+    ax.legend()
+    return ax
