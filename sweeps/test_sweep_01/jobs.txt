@@ -1,0 +1,10 @@
+# test_sweep_01, made by hand on 2026-10-31 11:29, commit 7b78d47
+# job E I wrapEuniform rep start run_dir
+1 4 0.2 10.0 4 init_configs/untangled/init_config_4.init sweeps/test_sweep_01/runs/E4_I0.2_W10.0_r4
+2 12 0.2 10.0 4 init_configs/untangled/init_config_4.init sweeps/test_sweep_01/runs/E12_I0.2_W10.0_r4
+3 4 0.6 10.0 4 init_configs/untangled/init_config_4.init sweeps/test_sweep_01/runs/E4_I0.6_W10.0_r4
+4 12 0.6 10.0 4 init_configs/untangled/init_config_4.init sweeps/test_sweep_01/runs/E12_I0.6_W10.0_r4
+5 4 0.2 10.0 9 init_configs/untangled/init_config_9.init sweeps/test_sweep_01/runs/E4_I0.2_W10.0_r9
+6 12 0.2 10.0 9 init_configs/untangled/init_config_9.init sweeps/test_sweep_01/runs/E12_I0.2_W10.0_r9
+7 4 0.6 10.0 9 init_configs/untangled/init_config_9.init sweeps/test_sweep_01/runs/E4_I0.6_W10.0_r9
+8 12 0.6 10.0 9 init_configs/untangled/init_config_9.init sweeps/test_sweep_01/runs/E12_I0.6_W10.0_r9
