@@ -1,6 +1,14 @@
 import numpy as np
 import csv
 from pathlib import Path
+import re
+
+FLOAT = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
+
+# E8.0_I0.2_W10.0_r1_rg.dat -> E, I, W, rep, kind
+RUN_NAME_RE = re.compile(
+    rf"E(?P<E>{FLOAT})_I(?P<I>{FLOAT})_W(?P<W>{FLOAT})_r(?P<rep>\d+)_(?P<kind>[a-z]+)\.dat"
+)
 
 
 def unwrap_coords(data: np.ndarray, dims: np.ndarray, titles: list) -> np.ndarray:
@@ -35,12 +43,34 @@ def store_data_to_csv(
         writer.writerows(data)
 
 
-def read_table(path: Path) -> np.ndarray:
+def read_table(path: Path | str) -> np.ndarray:
     """
     Returns columns names and data from a space separated file as a 2D array.
+
+    path (Path | str) : Path to data file
     """
     data = np.loadtxt(path, ndmin=2)
     return data
+
+
+def parse_run_name(path: Path | str) -> dict | None:
+    """
+    Read the parameters from a data file name like E8.0_I0.2_W10.0_r1_rg.dat
+        path (Path | str) : Path to the file. Only the file name is used.
+
+    Returns: dict with E, I, W (float), rep (int) and kind (str),
+             or None if the name doesn't match
+    """
+    m = RUN_NAME_RE.fullmatch(Path(path).name)
+    if m is None:
+        return None
+    return {
+        "E": float(m["E"]),
+        "I": float(m["I"]),
+        "W": float(m["W"]),
+        "rep": int(m["rep"]),
+        "kind": m["kind"],
+    }
 
 
 def quat2uaxis(q: np.ndarray):
