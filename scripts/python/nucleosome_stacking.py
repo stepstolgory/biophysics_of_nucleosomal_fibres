@@ -140,6 +140,16 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("filepath", type=str, help="Path to dump file")
+    parser.add_argument(
+        "--skip", type=int, default=0, help="Skip this many frames from the dump file."
+    )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        default=False,
+        help="Print out what stackings have been found.",
+    )
     args = parser.parse_args()
 
     times = []
@@ -147,15 +157,17 @@ def main():
     u_list = []
     frames = []
 
-    for chunk_params, chunk_data in load_dump_timestep(args.filepath, skip=1499):
+    for chunk_params, chunk_data in load_dump_timestep(args.filepath, skip=args.skip):
         nucs: list[Nucleosome] = reconstruct_nucleosomes(chunk_data)
         frames.append(nucs)
         times.append(chunk_params["timestep"])
         pos_list.append([nuc.pos for nuc in nucs])
         u_list.append([nuc.u for nuc in nucs])
 
-    _, fraction, _, _, _ = find_stackings(times, pos_list, u_list, frames, verbose=True)
-    print(np.mean(fraction))
+    _, fraction, _, _, _ = find_stackings(
+        times, pos_list, u_list, frames, verbose=args.verbose
+    )
+    print(f"Mean stacking fraction: {np.mean(fraction)}")
 
 
 if __name__ == "__main__":
