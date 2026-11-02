@@ -1,0 +1,6 @@
+# sweeps/new_ics_01: short runs at the set-up E and I, to make starting configurations 5 to 8. Made by hand 2026-11-02 10:31, commit e6587b3
+# job E I wrapEuniform rep start run_dir
+1 9.0 0.3 10.0 1 init_configs/untangled/init_config_1.init sweeps/new_ics_01/runs/E9.0_I0.3_W10.0_r1
+2 9.0 0.3 10.0 2 init_configs/untangled/init_config_2.init sweeps/new_ics_01/runs/E9.0_I0.3_W10.0_r2
+3 9.0 0.3 10.0 3 init_configs/untangled/init_config_3.init sweeps/new_ics_01/runs/E9.0_I0.3_W10.0_r3
+4 9.0 0.3 10.0 4 init_configs/untangled/init_config_4.init sweeps/new_ics_01/runs/E9.0_I0.3_W10.0_r4
