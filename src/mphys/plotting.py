@@ -1,14 +1,28 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
-from pathlib import Path
 import os
+import warnings
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import font_manager
-from mphys.paths import STYLE, FONTS, FIGURES
+
 from mphys.constants import QUANTITIES
+from mphys.paths import FIGURES, FONTS, STYLE
+
+QUANTITIES = {
+    "rg": dict(symbol=r"R_g", unit=r"\sigma_{LJ}"),
+    "ee": dict(symbol=r"R_{ee}", unit=r"\sigma_{LJ}"),
+    "fraction": dict(symbol=r"f_{\mathrm{stack}}", unit=None, ylim=(0, 1)),
+    "E": dict(symbol=r"$E_{ff}$", unit=r"k_BT"),
+    "I": dict(symbol="I", unit=None, ylim=(0, 1)),
+    "W": dict(symbol="W", unit=r"k_BT"),
+}
+TIMESCALE = 1e6
+TIME_LABEL = rf"Time steps ($10^{np.log10(1e6)}$)"
 
 
-def use_style():
+def _use_style():
     for f in FONTS.glob("*.ttf"):
         font_manager.fontManager.addfont(str(f))
     plt.style.use(str(STYLE / "atlas.mplstyle"))
@@ -20,6 +34,16 @@ def _stats_text(symbol: str, data: np.ndarray) -> str:
         "\n"
         rf"$\sigma = {data.std():.2f}$"
     )
+
+
+def _label(name: str) -> str:
+    q = QUANTITIES.get(name, None)
+    if q is not None:
+        label = f"{q['symbol']} ({q['unit']})"
+        return label
+    else:
+        warnings.warn(f"{name} doesn't have a QUANTITIES entry. Using default label.")
+        return name
 
 
 def timeseries(
@@ -38,7 +62,7 @@ def timeseries(
     t_scale (int) : what to scale the time array by. Default 1e6
     n_bins (int) : number of bins for the mean line. Default 50
     """
-    use_style()
+    _use_style()
 
     t = t / t_scale  # Scale the timesteps
 
