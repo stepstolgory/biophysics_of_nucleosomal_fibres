@@ -237,3 +237,4 @@ initial_condition_builder/generate_ic
 test_dumps
 
 sweeps/*/runs
+sweeps
