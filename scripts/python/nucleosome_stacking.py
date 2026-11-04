@@ -271,7 +271,7 @@ def main():
     _, fraction, _, _, _ = find_stackings(
         times, pos_list, u_list, frames, verbose=args.verbose
     )
-    print(f"Mean stacking fraction: {np.mean(fraction)}")
+    print(f"Mean stacking fraction: {np.mean(fraction):.3g}")
 
     if args.out is not None:
         partners = partner_table(frames)
