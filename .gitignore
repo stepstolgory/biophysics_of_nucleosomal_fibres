@@ -239,5 +239,6 @@ test_dumps
 sweeps/*/runs
 sweeps
 
-# 50-nucleosome set-up dumps and logs (on /storage)
-ic_N50/setup_outputs
+# 50-nucleosome set: not tracked until the good ones are chosen
+ic_N50/*
+!ic_N50/README.md
