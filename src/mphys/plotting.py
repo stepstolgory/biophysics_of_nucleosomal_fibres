@@ -138,7 +138,6 @@ def histogram(
     xlim = _entry(name).get("ylim")
     if xlim is not None:
         ax.set_xlim(xlim)
-    ax.legend()
     return ax
 
 
