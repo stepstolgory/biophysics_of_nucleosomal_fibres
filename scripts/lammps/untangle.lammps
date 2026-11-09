@@ -1,7 +1,10 @@
 variable id uloop 10
+variable icdir index .     # folder holding init_configs/ (e.g. -var icdir ic_N50)
+variable ndump index 5000  # dump interval
+variable ind index 49.0    # indenters sit at (-ind,-ind,-ind) and (ind,ind,ind)
 variable out index init_config_${id}
 variable dump_out index dump_initial_${id}
-variable log_out index init_configs/logs/log_untangle_${id}
+variable log_out index ${icdir}/init_configs/logs/log_untangle_${id}
 log ${log_out}.out
 
 variable nuntangle index $(1e4) #This is a placeholder number for now
@@ -27,7 +30,7 @@ boundary s s s
 neighbor 1.9 bin
 neigh_modify every 1 delay 1 check yes
 
-read_data init_configs/init_config_${id}.init
+read_data ${icdir}/init_configs/init_config_${id}.init
 
 
 group all type 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 # technically this is predefined to just include all atoms
@@ -74,7 +77,7 @@ variable nucR_d equal ${nucR_FF}-2.0*${nucR_FS}-${nucR_SS}+2.0*${nucR_S0}
 
 compute quat all property/atom quatw quati quatj quatk # compute a quantity called quat on all atoms per atom. this quantity is a quaternion (rotation) for aspherical particles
 # for the initial bit, dump quite often
-dump dum1 all custom 1000 init_configs/untangled/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
+dump dum1 all custom ${ndump} ${icdir}/init_configs/untangled/${dump_out}.nucleosomes id type x y z ix iy iz c_quat[1] c_quat[2] c_quat[3] c_quat[4] # dump every 5000 iterations the atom id, atom type, unscaled coordinates, box image of the atom, the quat vector computed above
 # compute the quaternion which describes the orientation of each bead
 # output along with coordinates
 
@@ -121,19 +124,19 @@ timestep 0.005
 
 neigh_modify exclude group all all # this switches off all interactions though I technically never enabled any
 
-fix myIndenter1 startBead indent 1.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 1.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 1.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 1.0 sphere ${ind} ${ind} ${ind} 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
 run ${nuntangle}
 #Increase energy gradually
-fix myIndenter1 startBead indent 10.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 10.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 10.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 10.0 sphere ${ind} ${ind} ${ind} 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
 
 run ${nuntangle}
 
-fix myIndenter1 startBead indent 100.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 100.0 sphere 49.0 49.0 49.0 1.0 side in # same sphere at z = +49.0 pulling in the end bead
+fix myIndenter1 startBead indent 100.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 100.0 sphere ${ind} ${ind} ${ind} 1.0 side in # same sphere at z = +49.0 pulling in the end bead
 
 run ${nuntangle}
 run ${nuntangle}
@@ -174,21 +177,21 @@ include scripts/lammps/wrap.lammps
 
 run ${nwrap}
 
-fix myIndenter1 startBead indent 50.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 50.0 sphere 49.0 49.0 49.0 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
+fix myIndenter1 startBead indent 50.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 50.0 sphere ${ind} ${ind} ${ind} 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
 
 run ${nwrap}
 
-fix myIndenter1 startBead indent 20.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 20.0 sphere 49.0 49.0 49.0 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
+fix myIndenter1 startBead indent 20.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 20.0 sphere ${ind} ${ind} ${ind} 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
 
 run ${nwrap}
 
-fix myIndenter1 startBead indent 10.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 10.0 sphere 49.0 49.0 49.0 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
+fix myIndenter1 startBead indent 10.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 10.0 sphere ${ind} ${ind} ${ind} 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
 run ${nwrap}
-fix myIndenter1 startBead indent 1.0 sphere -49.0 -49.0 -49.0 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
-fix myIndenter2 endBead indent 1.0 sphere 49.0 49.0 49.0 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
+fix myIndenter1 startBead indent 1.0 sphere -${ind} -${ind} -${ind} 1.0 side in # sphere at z = -49.0 which is pulling in the start bead at a small start energy of 1.0
+fix myIndenter2 endBead indent 1.0 sphere ${ind} ${ind} ${ind} 1.0 side in # sphere at z = 49.0 which is pulling in the end bead at a small start energy of 1.0
 run ${nwrap}
 # Turn off indenters 
 unfix myIndenter1
@@ -208,4 +211,4 @@ run ${nstack}
 run ${nstack} 
 run ${nstack} 
 
-write_data init_configs/untangled/${out}.init nocoeff
+write_data ${icdir}/init_configs/untangled/${out}.init nocoeff
