@@ -10,7 +10,8 @@ Usage:
     python plot_run.py FILE [FILE ...]                    # one time series per file
     python plot_run.py FILE -p ts hist                    # time series and histogram
     python plot_run.py FILE -c gap2                       # a column other than the first
-    python plot_run.py FILE --no-raw                      # binned mean only, no grey points
+    python plot_run.py FILE --raw                         # add the raw data as grey points
+    python plot_run.py FILE --stats                       # add the mean and SD as text
     python plot_run.py data_files/sweep02/E8.0_I0.2_W10.0_r*_rg.dat --overlay -o figures/sweep02/rg_E8.0_I0.2.png
 
 Output (unless -o or --outdir is given): figures/<same sub-folder>/<file stem>_<ts|hist>.png
@@ -101,9 +102,9 @@ def plot_each(args) -> None:
         for kind in args.p:
             fig, ax = plt.subplots()
             # raw is a timeseries option only, histogram passes its extras to ax.stairs
-            kw = {"raw": not args.no_raw} if kind == "ts" else {}
+            kw = {"raw": args.raw} if kind == "ts" else {}
             draw(ax, kind, t, y, name, args.bins, **kw)
-            if kind == "ts":
+            if args.stats and kind == "ts":
                 # "best" moves the legend off the data, the style's default is upper right
                 ax.legend(
                     title=stats_text(y, name),
@@ -111,7 +112,7 @@ def plot_each(args) -> None:
                     title_fontsize="medium",
                     loc="best",
                 )
-            else:
+            elif args.stats:
                 ax.legend(
                     handles=[],
                     title=stats_text(y, name),
@@ -203,9 +204,14 @@ def main():
         "--bins", type=int, default=50, help="Number of bins. Default 50"
     )
     parser.add_argument(
-        "--no-raw",
+        "--raw",
         action="store_true",
-        help="Leave out the grey raw points on time series (single-file plots)",
+        help="Add the raw data as grey points on time series (single-file plots)",
+    )
+    parser.add_argument(
+        "--stats",
+        action="store_true",
+        help="Add the mean and SD as text (single-file plots)",
     )
     parser.add_argument(
         "--show",
