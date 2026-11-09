@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
+from matplotlib.colors import BoundaryNorm, ListedColormap
 
 from mphys.paths import DATA, FIGURES, FONTS, STYLE
 
@@ -167,3 +168,39 @@ def default_out(input_path: Path | str, plot_kind: str) -> Path:
     if input_path.is_relative_to(DATA):
         return FIGURES / input_path.parent.relative_to(DATA) / name
     return input_path.parent / name
+
+
+# Kymograph colours: free, gap 1, gap 2 (the ladder), gap 3, gap 4 or more.
+# Shared with the which-neighbour bars, so a gap always has the same colour.
+GAP_COLOURS = ["#f2f2f2", "#e00000", "#0066cc", "#ff7f0e", "#808080"]
+GAP_LABELS = ["free", "1", "2", "3", "4+"]
+
+
+def kymograph(ax: plt.Axes, t: np.ndarray, gaps: np.ndarray):
+    """
+    Plot which neighbour each face is stacked with, over time.
+        ax : plt.Axes - Axes to plot on
+        t : np.ndarray - Timesteps, shape (F,)
+        gaps : np.ndarray - Gap along the chain for every face (from partner_gaps), shape (F, 2N).
+               0 is a free face. Gaps of 4 or more get the same colour.
+
+    Returns: the QuadMesh from pcolormesh, for fig.colorbar
+    """
+    gaps = np.clip(gaps, 0, len(GAP_COLOURS) - 1)
+    rows = np.arange(gaps.shape[1])  # One row per face: n0+, n0-, n1+, n1-, ...
+
+    # One colour per whole number: edges at -0.5, 0.5, ..., 4.5
+    cmap = ListedColormap(GAP_COLOURS)
+    norm = BoundaryNorm(np.arange(len(GAP_COLOURS) + 1) - 0.5, cmap.N)
+    mesh = ax.pcolormesh(
+        t / TIME_SCALE, rows, gaps.T, cmap=cmap, norm=norm, shading="nearest"
+    )
+
+    # Plus face on row 2i, minus face on row 2i + 1
+    N = gaps.shape[1] // 2
+    face_labels = [f"{i}{side}" for i in range(N) for side in ("+", "-")]
+    ax.set_yticks(rows, face_labels, fontsize=6)
+    ax.yaxis.set_minor_locator(plt.NullLocator())
+    ax.set_ylabel("Nucleosome")
+    ax.set_xlabel(TIME_LABEL)
+    return mesh
