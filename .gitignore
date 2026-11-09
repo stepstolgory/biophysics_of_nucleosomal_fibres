@@ -238,3 +238,6 @@ test_dumps
 
 sweeps/*/runs
 sweeps
+
+# 50-nucleosome set-up dumps and logs (on /storage)
+ic_N50/setup_outputs
