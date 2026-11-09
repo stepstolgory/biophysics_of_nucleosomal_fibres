@@ -7,7 +7,7 @@ Make sure to push changes to the repository after finishing a session.
 # Initial setup
 Make sure to enter a supported python environment
 ``` console
-conda activate mphy
+conda activate mphys
 ```
 
 Build the initial condition builder (once on each machine, it is not kept in git)
@@ -16,18 +16,49 @@ make -C initial_condition_builder
 ```
 LAMMPS itself goes in `LAMMPS/` (also not in git), so the commands below use `LAMMPS/lmp_mpi`. Run every command from the repo root.
 
-# Folder layout
+# Folder structure
 
-| Folder | What is in it | In git? |
-|---|---|---|
-| `initial_condition_builder/` | C++ code that builds a random starting structure | source only |
-| `initial_positions/` | starting structures `data_<id>.lammps`, and `ic_seeds.txt` with the seed used for each | yes |
-| `seeds/` | thermostat seeds `seed_<id>.lammps` | yes |
-| `init_configs/` | set-up output for each id: `init_config_<id>.init`, its dump and its log | no (only `.gitkeep`, so the folder exists) |
-| `sweeps/` | one folder per sweep, made by `scripts/make_sweep.sh` | `jobs.txt`, `sweep.lammps` and `jobs/` only |
-| `scripts/` | LAMMPS scripts, bash scripts, Python analysis and VMD colours | yes |
-| `data_files/`, `figures/` | output of `calculate_rg.py` | yes |
-| `LAMMPS/` | your LAMMPS build | no |
+```
+.
+├── initial_condition_builder/   C++ code that builds the straight starting chain
+│   ├── generate_IC_unwrapableNuclesomes.cpp
+│   ├── nucleosome.h
+│   └── Makefile                 run `make` here to build generate_ic
+├── initial_positions/           structures from the builder (data_<id>.lammps)
+│   └── ic_seeds.txt             builder seed for each structure
+├── seeds/                       LAMMPS seed files (seed_<rep>.lammps)
+├── init_configs/                starting configurations from the set-up script
+├── scripts/
+│   ├── lammps/                  set-up and production LAMMPS scripts
+│   ├── python/                  analysis and plotting scripts
+│   ├── vmd/                     VMD scripts for viewing runs ?
+│   ├── generate_random_IC.sh    makes structures with random seeds
+│   ├── generate_random_thermal_seeds.sh   makes the LAMMPS seed files
+│   ├── make_sweep.sh            makes a sweep folder
+│   ├── run_sweep.sh             runs a sweep as separate processes
+├── src/mphys/                   shared Python code (reading files, plotting)
+├── tests/                       tests for src/mphys and the analysis scripts
+├── sweeps/                      one folder per sweep: jobs.txt, job files, runs
+├── data_files/                  analysis output (.dat), one folder per sweep
+├── figures/                     plots, same layout as data_files/
+├── pyproject.toml               Python package set-up (`pip install -e .`)
+├── README.md
+└── RUNS.md                      log of test runs (T1, T2, ...)
+```
+
+`sweeps/` is a link to `/storage/teaching/MPhysProject/s2289431/sweeps`, as the
+dump files are too big for the home directory. Dumps and data files are not
+tracked by git.
+
+`init_configs` contains multiple sub-folders.
+```
+.
+├── 20_nuc_IC                   eight 20 nucleosomes initial conditions that have been manually confirmed as GOOD. These are tracked in Git.
+├── logs                        all logs
+├── sweep02                     initial conditions that were used for sweep02
+├── tangled                     initial conditions that only went through setup.lammps so are likely still untangled
+└── untangled                   initial conditions that have gone through both the setup.lammps and the untangle.lammps script
+```
 
 # Make starting structures and seeds
 ``` console

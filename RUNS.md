@@ -412,3 +412,36 @@ nohup LAMMPS/lmp_mpi -in scripts/lammps/untangle.lammps -var id 1 -screen none >
 **Results:** The two ends now attract to normal positions, but I think I will move the indents to the corners instead. Additionally, placing the indents outside of the box seems to work completely fine and not throw any errors.
 
 **Next:** Move the indents to the corners of the box. 
+
+### Data sweeps
+
+#### sweep04 2026-11-04 12:18
+
+**Comments:** this sweep is the first one to run on my newly acquired initial conditions. It aims to explore the whole height of the phase diagram in the `Thomas et al.` preprint which avoiding the folding fibre and glass regions. Since this is an exploratory sweep no repeats are done. 
+Importantly, since in some of the previous, *bad*, sweeps DNA still unwrapped despite being wrapped in the initial configuration. Thus **W** is increased to `20.0`.
+
+
+**Parameters:** 
+- E = `1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0`
+- I = `0.2, 0.6`
+- W = `20.0`
+- repeats = `1`
+
+**Initial conditions:** the initial conditions are located under `init_configs/20_nuc_IC`
+
+> [!NOTE]
+> Due to r = 1 only `init_config_1.init` is used for all runs.
+
+**Commands:**
+```bash
+./scripts/make_sweep.sh -n sweep04 -E "1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0" -I "0.2 0.6" -W "20.0" -r 1 -s init_configs/20_nuc_IC/
+
+nohup scripts/run_sweep.sh sweeps/sweep04/ 30 > sweeps/sweep04/launcher.out 2>&1 &
+```
+
+
+**Output folder:** `sweeps/sweep04/` which is actually linked to `/storage/teaching/MPhys_Project/s2289431/sweeps/sweep04/`
+
+**Notes:** It looks like my fibre is too short to be able to form droplets since none are found even deep into the droplet region. Though when the final state should be a fibre, it is well formed.
+
+**Next steps:** Run a lot of IC runs for 50 nucleosomes and then try find some good initial conditions.
