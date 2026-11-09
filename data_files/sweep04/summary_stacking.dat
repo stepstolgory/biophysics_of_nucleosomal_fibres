@@ -1,6 +1,6 @@
 # stacking: mean of the last 500 rows of each run, then mean, SD and SE across repeats
 # source: /home/smikoyan/projects/mphys/biophysics_of_nucleosomal_fibres/data_files/sweep04
-# made: 2026-11-09 16:59
+# made: 2026-11-09 17:14
 # E I W n fraction_mean fraction_sd fraction_se gap1_mean gap1_sd gap1_se gap2_mean gap2_sd gap2_se gap3_mean gap3_sd gap3_se gap4plus_mean gap4plus_sd gap4plus_se
 1 0.2 20 1 0.0139 nan nan 0 nan nan 0.0077 nan nan 0.004 nan nan 0.0022 nan nan
 1 0.6 20 1 0.0088 nan nan 0 nan nan 0.005 nan nan 0.0035 nan nan 0.0003 nan nan
