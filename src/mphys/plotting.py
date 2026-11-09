@@ -28,11 +28,19 @@ def _entry(name: str) -> dict:
     return QUANTITIES.get(name, {})
 
 
-def stats_text(symbol: str, data: np.ndarray) -> str:
+def stats_text(y: np.ndarray, name: str) -> str:
+    """
+    Mean and SD of one run, for a legend title.
+        y : np.ndarray - Values of the quantity
+        name : str - Column name, used to look up its symbol
+
+    Returns: two lines of text, <symbol> = mean and sigma = SD
+    """
+    symbol = _entry(name).get("symbol", rf"\mathrm{{{name}}}").strip("$")
     return (
-        rf"$\langle {symbol} \rangle = {data.mean():.2f}$"
+        rf"$\langle {symbol} \rangle = {y.mean():.2f}$"
         "\n"
-        rf"$\sigma = {data.std():.2f}$"
+        rf"$\sigma = {y.std():.2f}$"
     )
 
 
