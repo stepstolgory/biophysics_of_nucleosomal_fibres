@@ -45,7 +45,10 @@ def use_style():
 def label(name: str) -> str:
     q = QUANTITIES.get(name, None)
     if q is not None:
-        label = f"{q['symbol']} ({q['unit']})"
+        if q["unit"] is not None:
+            label = f"{q['symbol']} ({q['unit']})"
+        else:
+            label = f"{q['symbol']}"
         return label
     else:
         warnings.warn(f"{name} doesn't have a QUANTITIES entry. Using default label.")

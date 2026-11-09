@@ -1,29 +1,34 @@
 """
-Plot mean stacking fraction per energy
+Plot the mean of one column of a summary file against (E, I).
+
+Reads a summary_<kind>.dat file made by combine_runs.py.
 
 Usage:
-    python plot_stacking_fraction_per_energy.py filepath [--show] [-o]
+    python plot_stacking_fraction_per_energy.py SUMMARY [-c COLUMN] [--show] [-o OUT]
 """
 
 import argparse
-import numpy as np
 from pathlib import Path
-from collections import defaultdict
 
 import matplotlib.pyplot as plt
-from matplotlib import font_manager
+import numpy as np
 
-from mphys.funcs import read_table, parse_run_name
-from mphys.paths import FONTS, STYLE, FIGURES
-from mphys.plotting import timeseries
+from mphys.funcs import read_table
+from mphys.plotting import default_out, label, savefig, use_style
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
-        "datadir",
-        type=Path,
-        help="Path to a directory containing a sweeps _stackings files",
+        "summary", type=Path, help="summary_<kind>.dat from combine_runs.py"
+    )
+    parser.add_argument(
+        "-c",
+        "--column",
+        default="fraction",
+        help="Column to plot (without _mean). Default fraction",
     )
     parser.add_argument(
         "--show", action="store_true", help="Display the plot instead of saving it"
@@ -32,57 +37,46 @@ def main():
         "-o",
         "--out",
         type=Path,
-        default=f"{FIGURES}/kymograph.png",
-        help=f"Filepath to save plot to. Default: {FIGURES}/kymograph.png",
+        default=None,
+        help="Where to save. Default: figures/<sweep>/summary_<kind>_<column>_perE.png",
     )
-
     args = parser.parse_args()
 
-    files = sorted(args.datadir.glob("*_stacking.dat"))
-    if not files:
-        parser.error(f"no *_stacking.dat files in {args.datadir}")
+    names, data = read_table(args.summary)
+    if f"{args.column}_mean" not in names:
+        parser.error(f"{args.summary.name} has no column {args.column}_mean")
 
-    groups = defaultdict(list)
-    for path in files:
-        params = parse_run_name(path)
-        if params is None:
-            print(f"Skipping {path.name}: name doesn't match the pattern")
-            continue
-        groups[(params["E"], params["I"])].append(path)
+    E = data[:, names.index("E")]
+    I = data[:, names.index("I")]
+    n = data[:, names.index("n")]
+    mean = data[:, names.index(f"{args.column}_mean")]
+    se = data[:, names.index(f"{args.column}_se")]
 
-    rows = []
-    for (E, I), paths in sorted(groups.items()):
-        run_means = []
-        for path in paths:
-            names, data = read_table(path)
-            run_means.append(data[:, 1].mean(axis=0))
+    order = np.lexsort((E, I))  # sort by I, then by E within each I
+    E, I, n, mean, se = E[order], I[order], n[order], mean[order], se[order]
+    ticks = [f"({e:g}, {i:g})" for e, i in zip(E, I)]
 
-        run_means = np.array(run_means)
+    use_style()
+    x = np.arange(len(ticks))  # evenly spaced positions 0, 1, 2, ...
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.errorbar(x, mean, yerr=se, fmt="o", capsize=3)
+    ax.set_xticks(x)
+    ax.set_xticklabels(ticks, rotation=45, ha="right")
+    ax.tick_params(axis="x", which="minor", bottom=False, top=False)
+    ax.set_xlabel(r"$(E_{ff}, I)$")
+    ax.set_ylabel(r"$\langle$" + label(args.column) + r"$\rangle$")
+    if args.column == "fraction":
+        ax.set_ylim(0, 1)
+    n_text = f"{n.min():g}" if n.min() == n.max() else f"{n.min():g} to {n.max():g}"
+    ax.set_title(f"Error bars: SE over n = {n_text} runs", fontsize="small")
+    fig.tight_layout()
 
-        n = len(run_means)
-        mean = run_means.mean(axis=0)
-        if n > 1:
-            sd = run_means.std(axis=0, ddof=1)
-            se = sd / np.sqrt(n)
-        else:
-            sd = se = np.full_like(mean, np.nan)
-
-        rows.append([E, I, n, mean, sd, se])
-
-    # Now I need to pick out the data properly. For each row I need to get:
-    # an x-label: (E, I)
-    # the mean fraction to plot: mean
-    # the standard error on the mean: se
-    ticks = []
-    means = []
-    errors = []
-    for E, I, n, mean, sd, se in rows:
-        ticks.append(f"({E},{I})")
-        means.append(mean)
-        errors.append(se)
-    print(ticks)
-    print(means)
-    print(errors)
+    if args.show:
+        plt.show()
+    else:
+        out = args.out or default_out(args.summary, f"{args.column}_perE")
+        savefig(fig, out)
+        print(f"Saved {out}")
 
 
 if __name__ == "__main__":
