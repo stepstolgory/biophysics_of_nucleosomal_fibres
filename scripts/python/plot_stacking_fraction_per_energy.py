@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from mphys.funcs import read_table
-from mphys.plotting import default_out, label, savefig, use_style
+from mphys.plotting import QUANTITIES, default_out, label, savefig, use_style
 
 
 def main():
@@ -64,9 +64,7 @@ def main():
     ax.set_xticklabels(ticks, rotation=45, ha="right")
     ax.tick_params(axis="x", which="minor", bottom=False, top=False)
     ax.set_xlabel(r"$(E_{ff}, I)$")
-    ax.set_ylabel(r"$\langle$" + label(args.column) + r"$\rangle$")
-    if args.column == "fraction":
-        ax.set_ylim(0, 1)
+    ax.set_ylabel(r"$\langle$" + label("fraction") + r"$\rangle$")
     n_text = f"{n.min():g}" if n.min() == n.max() else f"{n.min():g} to {n.max():g}"
     ax.set_title(f"Error bars: SE over n = {n_text} runs", fontsize="small")
     fig.tight_layout()
